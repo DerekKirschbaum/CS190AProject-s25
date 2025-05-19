@@ -6,7 +6,7 @@ To run the code:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/CS190AProject-s25.git
+   git clone https://github.com/DerekKirschbaum/CS190AProject-s25.git
    cd CS190AProject-s25
 
 2. **Activate virtual environment:**
