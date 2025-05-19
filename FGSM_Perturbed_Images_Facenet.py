@@ -14,7 +14,7 @@ CELEBS     = ["Brad Pitt", "Tom Hanks", "Scarlett Johansson", "Megan Fox", "Ange
 TRAIN_K    = 80
 TEST_K     = 20
 DEVICE     = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-EPSILON    = 0.07   # max per-pixel change on [-1,1] scale
+EPSILON    = 0.06   # max per-pixel change on [-1,1] scale
 
 # ── SET UP MTCNN & FaceNet ───────────────────────────────────────────────────────
 mtcnn = MTCNN(image_size=160, margin=0, device=DEVICE)
@@ -121,6 +121,16 @@ def test_FGSM(model_name, data_dir, celebrities, class_means,
     Same as your original test_model, but for Brad Pitt we first
     call generate_FGSM → get (adv,delta) → plot once → classify adv.
     """
+    output_file = "fgsm_accuracy_vs_epsilon.txt"
+    if os.path.exists(output_file):
+        with open(output_file, "r") as f:
+            for line in f:
+                if line.strip():  # skip empty lines
+                    saved_eps, saved_acc = line.strip().split()
+                    if float(saved_eps) == eps:
+                        print(f"\n[Skipping] ε={eps} already evaluated. Brad Pitt accuracy: {saved_acc}%")
+                        return
+                    
     total, correct = 0, 0
     correct_per_celeb = {c:0 for c in celebrities}
     plotted = False
@@ -165,11 +175,28 @@ def test_FGSM(model_name, data_dir, celebrities, class_means,
     for c in celebrities:
         acc = correct_per_celeb[c] / test_per_celeb * 100
         print(f" {c:15s}: {acc:.2f}%")
+    
+    brad_acc = correct_per_celeb["Brad Pitt"] / test_per_celeb * 100
+
+    with open(output_file, "a") as f:
+        f.write(f"{eps}\t{brad_acc:.2f}\n")
+    
+    with open(output_file, "r") as f:
+        lines = [line.strip() for line in f if line.strip()]
+        lines = sorted(lines, key=lambda x: float(x.split()[0]))
+
+    with open(output_file, "w") as f:
+        for line in lines:
+            f.write(line + "\n")
 
 # ── SAVE 100 BRAD PERTURBATIONS ──────────────────────────────────────────────────
 def save_all_bradd_perturbations(class_means, celebrities, eps=EPSILON):
-    out_dir = os.path.join(".", "Bradd-Pert-0.07")
+    out_dir = os.path.join(".", f"Bradd-Pert-{eps}")
     os.makedirs(out_dir, exist_ok=True)
+
+    if os.path.exists(out_dir) and len(glob.glob(os.path.join(out_dir, "*.*"))) >= 100:
+        print(f"Adversarial images already exist in {out_dir}, skipping generation.")
+        return
 
     # take first 100 Brad Pitt images
     brad_paths = sorted(glob.glob(os.path.join(DATA_DIR, "Brad Pitt", "*.*")))[:100]
@@ -208,9 +235,28 @@ def save_all_bradd_perturbations(class_means, celebrities, eps=EPSILON):
 
 # ── MAIN ─────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    means = train_model("Facenet", DATA_DIR, CELEBS)
+    RETRAIN = False
+
+    if not RETRAIN and os.path.exists("class_means.npy"):
+        print("Loading cached class means...")
+        means = np.load("class_means.npy", allow_pickle=True).item()
+    else:
+        print("Training model and computing class means...")
+        means = train_model("Facenet", DATA_DIR, CELEBS)
+        np.save("class_means.npy", means)
+
     # test_model("Facenet", DATA_DIR, CELEBS, means)
     test_FGSM("Facenet", DATA_DIR, CELEBS, means, eps=EPSILON)
     save_all_bradd_perturbations(means, CELEBS, eps=EPSILON)
+
+    data = np.loadtxt("fgsm_accuracy_vs_epsilon.txt")
+    epsilons, accuracies = data[:, 0], data[:, 1]
+
+    plt.plot(epsilons, accuracies, marker='o')
+    plt.xlabel("Epsilon (ε)")
+    plt.ylabel("Accuracy on Brad Pitt (%)")
+    plt.title("FGSM Attack: Brad Pitt Accuracy vs. Epsilon")
+    plt.grid(True)
+    plt.show()
 
 
