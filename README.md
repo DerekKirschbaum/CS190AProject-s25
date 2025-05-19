@@ -25,5 +25,5 @@ To run the code:
    ```bash
    python FGSM_Perturbed_Images_Facenet.py
 
-5. **Modify CONFIG**
-   In the config section, modify variables to vary certain parameters influencing the model and our results
+5. **Modify CONFIG:**\
+    In the CONFIG section, modify variables to vary certain parameters influencing the model and our results
