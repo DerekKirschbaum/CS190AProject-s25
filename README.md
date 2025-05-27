@@ -19,7 +19,7 @@ To run the code:
 
 3. **Install necessary packages:**
    ```bash
-   pip install numpy torch torchvision facenet-pytorch matplotlib pillow
+   pip install numpy torch torchvision facenet-pytorch matplotlib pillow insightface
 
 4. **Run the program:**
    ```bash
