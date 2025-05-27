@@ -26,4 +26,4 @@ To run the code:
    python FGSM_Perturbed_Images_Facenet.py
 
 5. **Modify CONFIG:**\
-    In the CONFIG section, modify variables to vary certain parameters influencing the model and our results
+    In the CONFIG section of FGSM_Perturbed_Images_Facenet.py, modify variables to vary certain parameters influencing the FGSM attack and our results
