@@ -11,6 +11,8 @@ import insightface
 from insightface.app import FaceAnalysis
 
 SIM_THRESHOLD = 0.5  # or 0.5, depending on what you find works best
+TRAINPERCELEB = 80
+TESTPERCELEB = 20
 
 
 def load_arcface_model():
@@ -25,6 +27,11 @@ def embed_arcface(img_pil):
     faces = arcface_app.get(img_np)
 
     if not faces:
+        # print(f"[WARN] No faces found")
+        # plt.imshow(img_pil)
+        # plt.title("No face detected")
+        # plt.axis("off")
+        # plt.show()
         return None
 
     return faces[0].embedding  # 512-dim float32
@@ -34,7 +41,8 @@ def train_arcface_means(data_dir, celebrities, train_k):
     for celeb in celebrities:
         paths = sorted(glob.glob(os.path.join(data_dir, celeb, "*.*")))[:train_k]
         embs = []
-        for p in paths:
+        trainpaths = paths[:TRAINPERCELEB]
+        for p in trainpaths:
             img = Image.open(p).convert("RGB")
             emb = embed_arcface(img)
             if emb is not None:
@@ -50,7 +58,8 @@ def test_arcface_transfer(adv_dir, arc_means, celebrities):
     correct = 0
     total = 0
 
-    for fname in sorted(glob.glob(os.path.join(adv_dir, "*.*"))):
+    testpaths = sorted(glob.glob(os.path.join(adv_dir, "*.*")))[TRAINPERCELEB:TRAINPERCELEB + TESTPERCELEB]
+    for fname in testpaths:
         img = Image.open(fname).convert("RGB")
         emb = embed_arcface(img)
         if emb is None:
@@ -90,9 +99,36 @@ def test_arcface_transfer(adv_dir, arc_means, celebrities):
 if __name__ == "__main__":
     arcface_app = load_arcface_model()
     data_dir = "/Users/derekkirschbaum/cs190a/CS190AProject-s25/Celebrity Faces Dataset"
-    adv_dir = "/Users/derekkirschbaum/cs190a/CS190AProject-s25/Bradd-Pert-0.14"
+    adv_dir = "/Users/derekkirschbaum/cs190a/CS190AProject-s25/Bradd-Pert-0.4"
     celebrities = ["Brad Pitt", "Tom Hanks", "Scarlett Johansson", "Megan Fox", "Angelina Jolie"]
     train_k = 5
 
-    arc_means = train_arcface_means(data_dir, celebrities, train_k)
+    #arc_means = train_arcface_means(data_dir, celebrities, train_k)
+    if os.path.exists("arcface_means.npy"):
+        print("Loading cached arcface class means...")
+        arc_means = np.load("arcface_means.npy", allow_pickle=True).item()
+    else:
+        print("Computing arcface class means...")
+        arc_means = train_arcface_means(data_dir, celebrities, train_k)
+        np.save("arcface_means.npy", arc_means)
+
     test_arcface_transfer(adv_dir, arc_means, celebrities)
+
+    data_arcface = np.loadtxt("arcface_accuracy_vs_epsilon.txt")
+    eps_arcface, acc_arcface = data_arcface[:, 0], data_arcface[:, 1]
+
+    # Load FGSM accuracy data
+    data_fgsm = np.loadtxt("fgsm_accuracy_vs_epsilon.txt")
+    eps_fgsm, acc_fgsm = data_fgsm[:, 0], data_fgsm[:, 1]
+
+    # Plot both on the same graph
+    plt.plot(eps_arcface, acc_arcface, marker='o', label="ArcFace")
+    plt.plot(eps_fgsm, acc_fgsm, marker='s', label="FaceNet")
+
+    # Labeling
+    plt.xlabel("Epsilon (ε)")
+    plt.ylabel("Accuracy on Brad Pitt (%)")
+    plt.title("ArcFace and FaceNet Accuracy vs. Epsilon for FGSM Attacks")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
