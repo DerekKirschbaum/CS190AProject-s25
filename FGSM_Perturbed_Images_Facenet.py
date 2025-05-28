@@ -9,12 +9,12 @@ from PIL import Image
 from torchvision import transforms
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────────
-DATA_DIR   = "./Celebrity Faces Dataset"
-CELEBS     = ["Brad Pitt", "Tom Hanks", "Scarlett Johansson", "Megan Fox", "Angelina Jolie"]
-TRAIN_K    = 80
-TEST_K     = 20
+DATA_DIR   = "./just_faces"
+CELEBS     = ["Brad_Pitt_faces", "Tom_Hanks_faces", "Scarlett_Johansson_faces", "Megan_Fox_faces", "Angelina_Jolie_faces"]
+TRAIN_K    = 250
+TEST_K     = 100
 DEVICE     = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-EPSILON    = 0.06   # max per-pixel change on [-1,1] scale
+EPSILON    = 0.08   # max per-pixel change on [-1,1] scale
 
 # ── SET UP MTCNN & FaceNet ───────────────────────────────────────────────────────
 mtcnn = MTCNN(image_size=160, margin=0, device=DEVICE)
@@ -176,7 +176,7 @@ def test_FGSM(model_name, data_dir, celebrities, class_means,
         acc = correct_per_celeb[c] / test_per_celeb * 100
         print(f" {c:15s}: {acc:.2f}%")
     
-    brad_acc = correct_per_celeb["Brad Pitt"] / test_per_celeb * 100
+    brad_acc = correct_per_celeb["Brad_Pitt_faces"] / test_per_celeb * 100
 
     with open(output_file, "a") as f:
         f.write(f"{eps}\t{brad_acc:.2f}\n")
