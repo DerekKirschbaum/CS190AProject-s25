@@ -1,128 +1,56 @@
+# Imports
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+from torchvision import datasets, transforms
+from torch.utils.data import random_split
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
+import torch.optim as optim
+
 # Data Preparation
 
-# Imports
-
-import torch
-import torchvision
-
-#Getting Data
-
-data_dir = "./ScrapingDataset"
-
-# Random Seed
-
-import numpy as np
+# Random Seed for Reproducibility
 torch.manual_seed(42)
 np.random.seed(42)
 
-# Formatting the Dataset
+def load_data(data_dir, height, length): 
+ 
 
-from torchvision import datasets, transforms
-#resize all images
-height = 160
-length = 160
+    # Formatting the Dataset
 
-#Note we only want to transform the training data, not the testing data
-train_transform = transforms.Compose([
-    transforms.RandomRotation(10),      # rotate +/- 10 degrees
-    transforms.RandomHorizontalFlip(),
-    transforms.ColorJitter(brightness = 0.1, contrast = 0.1, saturation = 0.1, hue = 0.1), #randomly selects brightness between [0.9,1.1]
-    transforms.Resize((height, length)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean = (0.5,0.5,0.5), std = (0.5,0.5,0.5)) # normalizes from [0,1] --> [-1,1]
-])
+    transform = transforms.Compose([
+        transforms.Resize((height, length)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean = (0.5,0.5,0.5), std = (0.5,0.5,0.5)) # normalizes from [0,1] --> [-1,1]
+    ])
 
-test_transform = transforms.Compose([
-    transforms.Resize((height, length)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean = (0.5,0.5,0.5), std = (0.5,0.5,0.5))
-])
+    dataset = datasets.ImageFolder(root=data_dir, transform = transform)
 
-dataset = datasets.ImageFolder(root=data_dir, transform = None)
+    # Train/Validation/Test Split
+    total_size = len(dataset)  # 70/15/15 Trin/Validation/Test split
+    train_size = int(0.7 * total_size)
+    val_size = int(0.15 * total_size)
+    test_size = total_size - train_size - val_size
 
-classes = dataset.find_classes(directory = data_dir)[0]
-
-print(classes)
-
-# Train/Validation/Test Split
-
-from torch.utils.data import random_split
-import copy
-
-total_size = len(dataset)  # 70/15/15 Trin/Validation/Test split
-train_size = int(0.7 * total_size)
-val_size = int(0.15 * total_size)
-test_size = total_size - train_size - val_size
-
-train_set, val_set, test_set = random_split(dataset, [train_size, val_size, test_size])
-
-augmented_train_set = copy.deepcopy(train_set)
-
-augmented_train_set.dataset.transform = train_transform
-
-train_set.dataset.transform = test_transform
-
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Using device:", device)
+    train_set, val_set, test_set = random_split(dataset, [train_size, val_size, test_size])
+    return train_set, val_set, test_set
 
 # Displaying an Image
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 def imshow(img):
     img = img / 2 + 0.5
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
-
-# Running Example
-
-# demo_img_idx = 5
-# demo_img = augmented_train_set[demo_img_idx][0]
-#  imshow(demo_img)
-# test_label = augmented_train_set[demo_img_idx][1]
-# print("Ground Truth Label: ", classes[test_label])
-
-# Model Definition
-
-# Architecture 1 - Simple Linear
-
-import torch.nn as nn
-import torch.nn.functional as F
-
-class SimpleLinear(nn.Module):
-    def __init__(self, num_classes):
-        super().__init__()
-
-        flat_feats = height * length * 3
-
-        self.fc1 = nn.Linear(flat_feats, 120)
-        self.fc2 = nn.Linear(120,        84)
-        self.fc3 = nn.Linear(84,         20)
-        self.fc4 = nn.Linear(20,  num_classes)
+    plt.show(block = False)
 
 
-    def forward(self, x):
-
-        x = torch.flatten(x, 1) # flatten all dimensions except batch
-
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = self.fc4(x)
+#Model Definition
 
 
-        return x
-
-# Architecture 1 - Complex CNN
-
-import torch.nn as nn
-import torch.nn.functional as F
-
-class ComplexArchitectureCNN(nn.Module):
-    def __init__(self, num_classes):
+class SimpleCNN(nn.Module):
+    def __init__(self,num_classes, height, length):
         super().__init__()
 
         self.conv1 = nn.Conv2d(in_channels = 3, out_channels = 6, kernel_size = 3, padding = 1, stride = 1)
@@ -141,7 +69,7 @@ class ComplexArchitectureCNN(nn.Module):
         self.fc3 = nn.Linear(84,         20)
         self.fc4 = nn.Linear(20,  num_classes)
 
-        self.dropout = nn.Dropout(p = 0)
+        self.dropout = nn.Dropout(p = 0.25)
 
 
     def forward(self, x):
@@ -174,9 +102,6 @@ def compute_accuracy(model, data_loader):
   model.eval()
   with torch.no_grad():
       for images, labels in data_loader:
-          images = images.to(device)
-          labels = labels.to(device)
-
           outputs = model(images)
 
           _, predicted = torch.max(outputs, 1)
@@ -187,41 +112,20 @@ def compute_accuracy(model, data_loader):
 
 # Model Training
 
-from torch.utils.data import DataLoader
-import torch.optim as optim
 
-def train_model(batch_size, epochs, lr, weight_decay, n_classes, architecture = 'complex'):
+
+def train_model(batch_size, epochs, lr, weight_decay, n_classes, train_set, val_set, height, length):
     val_loader = DataLoader(val_set, batch_size = 512)
     val_accuracy = 0
 
-    if(architecture == 'simple'):
-      model = SimpleLinear(n_classes)
-      optimizer = optim.Adam(model.parameters(), lr = lr, weight_decay = weight_decay)
-      train_loader = torch.utils.data.DataLoader(train_set, batch_size = batch_size, shuffle=True)
 
-
-    elif(architecture == 'complex'):
-      model = ComplexArchitectureCNN(n_classes)
-      optimizer = optim.Adam(model.parameters(), lr = lr, weight_decay = weight_decay)
-      scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode='max',        # because we monitor validation ACC (higher is better)
-        factor=0.1,        # multiply LR by this on plateau
-        patience=3,        # wait this many epochs with no improvement
-        min_lr=1e-6        # lower bound on LR
-      )
-      train_loader = torch.utils.data.DataLoader(augmented_train_set, batch_size = batch_size, shuffle=True)
-
-
-
-    model = model.to(device)
-
+    model = SimpleCNN(n_classes, height, length)
+    optimizer = optim.Adam(model.parameters(), lr = lr, weight_decay = weight_decay)
+    
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size = batch_size, shuffle=True)
 
     for epoch in range(1, epochs + 1):
       for images, labels in train_loader:
-          images = images.to(device)
-          labels = labels.to(device)
-
 
           optimizer.zero_grad()
 
@@ -232,51 +136,47 @@ def train_model(batch_size, epochs, lr, weight_decay, n_classes, architecture = 
           print("Loss:", round(loss.item(), 3))
 
       val_accuracy = compute_accuracy(model, val_loader)
-      print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%' )
+      train_accuracy = compute_accuracy(model, train_loader)
 
-
-      if(architecture == 'complex'):
-        scheduler.step(val_accuracy)
+      print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
 
     return model
 
-def get_model():
+def build_model(train_set, val_set, height, length):
     batch_size = 128
-    epoch = 50
+    epoch = 20
     lr = 0.001
     weight_decay = 0.001
+    classes = train_set.dataset.classes
     n_classes = len(classes)
-    model = train_model(batch_size, epoch, lr, weight_decay, n_classes, architecture = 'simple')
+    model = train_model(batch_size, epoch, lr, weight_decay, n_classes, train_set, val_set, height, length)
     return model
-# Testing the Model
 
 
-#Main: 
+
+
 if __name__ == "__main__":
-    #do some testing here
-    brad_pert = './PerturbedFolder'
+#Directory
+    data_dir = "just_faces"
 
-    transfer_dataset = datasets.ImageFolder(root=brad_pert, transform = test_transform)
+    img_height = 50  #resize all images to uniform size
+    img_length = 50
 
-    print(classes)
+    train_set, val_set, test_set = load_data(data_dir, img_height, img_length)
+    build_model(train_set, val_set, img_height, img_length)
 
-    print("Original label at #99:", transfer_dataset[99][1])
 
-    # 2. override _all_ labels in the `samples` list
-    for i, (path, _) in enumerate(transfer_dataset.samples):
-        transfer_dataset.samples[i] = (path, 1)
 
-    # 3. verify
-    print("New label at #99:", transfer_dataset[99][1])
+#Running Example
+    demo_img_idx = 5
+    demo_img = train_set[demo_img_idx][0]
+    imshow(demo_img)
+    test_label = train_set[demo_img_idx][1]
+    classes = train_set.dataset.classes
+    print("Ground Truth Label: ", classes[test_label])
 
-    # 4. now you can create your loader
-    transfer_loader = DataLoader(transfer_dataset, batch_size=1, shuffle=True, num_workers=4)
 
-    model = get_model()
 
-    transfer_accuracy = compute_accuracy(model, transfer_loader)
-
-    print("transfer_acc: ", transfer_accuracy)
 
 
 
