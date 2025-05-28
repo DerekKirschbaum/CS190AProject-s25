@@ -8,6 +8,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch.optim as optim
+import os
+
+import FGSM_Perturbed_Images_Facenet
 
 # Data Preparation
 
@@ -43,7 +46,7 @@ def imshow(img):
     img = img / 2 + 0.5
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show(block = False)
+    plt.show()
 
 
 #Model Definition
@@ -59,9 +62,11 @@ class SimpleCNN(nn.Module):
 
         self.conv2 = nn.Conv2d(in_channels = 6, out_channels = 16, kernel_size = 3, padding = 1, stride = 1)
 
-        h_out = height // 2 // 2
-        l_out = length // 2 // 2
-        flat_feats = 16 * h_out * l_out
+        self.conv3 = nn.Conv2d(in_channels = 16, out_channels = 32, kernel_size = 3, padding = 1, stride = 1)
+
+        h_out = height // 2 // 2 // 2
+        l_out = length // 2 // 2 // 2
+        flat_feats = 32 * h_out * l_out
 
 
         self.fc1 = nn.Linear(flat_feats, 120)
@@ -75,6 +80,7 @@ class SimpleCNN(nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.relu(self.conv3(x)))
 
         x = torch.flatten(x, 1) # flatten all dimensions except batch
 
@@ -153,27 +159,36 @@ def build_model(train_set, val_set, height, length):
     return model
 
 
+def save_model(model, model_path):
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    torch.save(model, model_path)
+
+def load_model(model_path): 
+    model = torch.load(model_path, weights_only = False)
+    return model
 
 
 if __name__ == "__main__":
 #Directory
     data_dir = "just_faces"
+    img_height = 160  #resize all images to uniform size
+    img_length = 160
 
-    img_height = 50  #resize all images to uniform size
-    img_length = 50
-
+#Get the datasets
     train_set, val_set, test_set = load_data(data_dir, img_height, img_length)
-    build_model(train_set, val_set, img_height, img_length)
+
+#Build the Model
+    # model = build_model(train_set, val_set, img_height, img_length)
+
+#Save the Model
+    model_path = "models/simplecnn.pth"
+    # save_model(model, model_path)
+
+#Load Model
+    model = load_model(model_path)
+    
 
 
-
-#Running Example
-    demo_img_idx = 5
-    demo_img = train_set[demo_img_idx][0]
-    imshow(demo_img)
-    test_label = train_set[demo_img_idx][1]
-    classes = train_set.dataset.classes
-    print("Ground Truth Label: ", classes[test_label])
 
 
 
