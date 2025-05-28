@@ -100,7 +100,7 @@ def generate_FGSM(face_tensor, class_means, celebrities, eps=EPSILON):
     logits = embn @ cm_torch                                # (1,5)
 
     # 4) true label index for Brad Pitt
-    y_true = torch.tensor([celebrities.index("Brad Pitt")], device=DEVICE)
+    y_true = torch.tensor([celebrities.index("Brad_Pitt_faces")], device=DEVICE)
 
     # 5) cross-entropy loss (we want to *increase* this)
     loss = F.cross_entropy(logits, y_true)
@@ -141,7 +141,7 @@ def test_FGSM(model_name, data_dir, celebrities, class_means,
         for p in test_paths:
             ft = load_face_tensor(p)  # your existing loader
 
-            if celeb == "Brad Pitt":
+            if celeb == "Brad_Pitt_faces":
                 adv, delta = generate_FGSM(ft, class_means, celebrities, eps)
 
                 if not plotted:
@@ -194,12 +194,12 @@ def save_all_bradd_perturbations(class_means, celebrities, eps=EPSILON):
     out_dir = os.path.join(".", f"Bradd-Pert-{eps}")
     os.makedirs(out_dir, exist_ok=True)
 
-    if os.path.exists(out_dir) and len(glob.glob(os.path.join(out_dir, "*.*"))) >= 100:
+    if os.path.exists(out_dir) and len(glob.glob(os.path.join(out_dir, "*.*"))) >= 350:
         print(f"Adversarial images already exist in {out_dir}, skipping generation.")
         return
 
-    # take first 100 Brad Pitt images
-    brad_paths = sorted(glob.glob(os.path.join(DATA_DIR, "Brad Pitt", "*.*")))[:100]
+    # take first 350 Brad Pitt images
+    brad_paths = sorted(glob.glob(os.path.join(DATA_DIR, "Brad_Pitt_faces", "*.*")))[:350]
     for p in brad_paths:
         # 1) load full-res
         img = Image.open(p).convert("RGB")
@@ -245,18 +245,18 @@ if __name__ == "__main__":
         means = train_model("Facenet", DATA_DIR, CELEBS)
         np.save("class_means.npy", means)
 
-    # test_model("Facenet", DATA_DIR, CELEBS, means)
+    test_model("Facenet", DATA_DIR, CELEBS, means)
     test_FGSM("Facenet", DATA_DIR, CELEBS, means, eps=EPSILON)
     save_all_bradd_perturbations(means, CELEBS, eps=EPSILON)
 
-    data = np.loadtxt("fgsm_accuracy_vs_epsilon.txt")
-    epsilons, accuracies = data[:, 0], data[:, 1]
+    # data = np.loadtxt("fgsm_accuracy_vs_epsilon.txt")
+    # epsilons, accuracies = data[:, 0], data[:, 1]
 
-    plt.plot(epsilons, accuracies, marker='o')
-    plt.xlabel("Epsilon (ε)")
-    plt.ylabel("Accuracy on Brad Pitt (%)")
-    plt.title("FGSM Attack: Brad Pitt Accuracy vs. Epsilon")
-    plt.grid(True)
-    plt.show()
+    # plt.plot(epsilons, accuracies, marker='o')
+    # plt.xlabel("Epsilon (ε)")
+    # plt.ylabel("Accuracy on Brad Pitt (%)")
+    # plt.title("FGSM Attack: Brad Pitt Accuracy vs. Epsilon")
+    # plt.grid(True)
+    # plt.show()
 
 
