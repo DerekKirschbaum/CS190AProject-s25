@@ -18,9 +18,8 @@ import FGSM_Perturbed_Images_Facenet
 torch.manual_seed(42)
 np.random.seed(42)
 
-def load_data(data_dir, height, length): 
- 
 
+def load_data(data_dir, height, length): 
     # Formatting the Dataset
 
     transform = transforms.Compose([
@@ -46,7 +45,8 @@ def imshow(img):
     img = img / 2 + 0.5
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
+    plt.show(block = False)
+    plt.pause(3)
 
 
 #Model Definition
@@ -62,11 +62,9 @@ class SimpleCNN(nn.Module):
 
         self.conv2 = nn.Conv2d(in_channels = 6, out_channels = 16, kernel_size = 3, padding = 1, stride = 1)
 
-        self.conv3 = nn.Conv2d(in_channels = 16, out_channels = 32, kernel_size = 3, padding = 1, stride = 1)
-
-        h_out = height // 2 // 2 // 2
-        l_out = length // 2 // 2 // 2
-        flat_feats = 32 * h_out * l_out
+        h_out = height // 2 // 2 
+        l_out = length // 2 // 2
+        flat_feats = 16 * h_out * l_out
 
 
         self.fc1 = nn.Linear(flat_feats, 120)
@@ -80,7 +78,7 @@ class SimpleCNN(nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = self.pool(F.relu(self.conv3(x)))
+
 
         x = torch.flatten(x, 1) # flatten all dimensions except batch
 
@@ -95,9 +93,6 @@ class SimpleCNN(nn.Module):
 
         return x
 
-# Criterion
-
-criterion = nn.CrossEntropyLoss() #Cross Entropy (MLE assuming Categorical Distribution)
 
 # Computing Accuracy
 
@@ -119,14 +114,14 @@ def compute_accuracy(model, data_loader):
 # Model Training
 
 
-
 def train_model(batch_size, epochs, lr, weight_decay, n_classes, train_set, val_set, height, length):
     val_loader = DataLoader(val_set, batch_size = 512)
     val_accuracy = 0
 
 
     model = SimpleCNN(n_classes, height, length)
-    optimizer = optim.Adam(model.parameters(), lr = lr, weight_decay = weight_decay)
+    optimizer = optim.Adam(model.parameters(), lr = lr, weight_decay = weight_decay) 
+    criterion = nn.CrossEntropyLoss() #Cross Entropy (MLE assuming Categorical Distribution)
     
     train_loader = torch.utils.data.DataLoader(train_set, batch_size = batch_size, shuffle=True)
 
@@ -149,8 +144,9 @@ def train_model(batch_size, epochs, lr, weight_decay, n_classes, train_set, val_
     return model
 
 def build_model(train_set, val_set, height, length):
+    #Hyperparameters
     batch_size = 128
-    epoch = 20
+    epoch = 10
     lr = 0.001
     weight_decay = 0.001
     classes = train_set.dataset.classes
@@ -168,37 +164,29 @@ def load_model(model_path):
     return model
 
 
+
 if __name__ == "__main__":
-#Directory
+    #Directory
+
     data_dir = "just_faces"
     img_height = 160  #resize all images to uniform size
     img_length = 160
 
-#Get the datasets
+    #Get the datasets
+
     train_set, val_set, test_set = load_data(data_dir, img_height, img_length)
 
-#Build the Model
-    # model = build_model(train_set, val_set, img_height, img_length)
 
-#Save the Model
     model_path = "models/simplecnn.pth"
-    # save_model(model, model_path)
+    build_new_model = False
 
-#Load Model
-    model = load_model(model_path)
-    
+    #Build the Model
 
+    if(build_new_model == True):
+        model = build_model(train_set, val_set, img_height, img_length)
+        save_model(model, model_path)
 
-
-
-
-
-
-
-
-
-
-
-
-
+    #Load Model
+    elif(build_new_model == False): 
+        model = load_model(model_path)
 
