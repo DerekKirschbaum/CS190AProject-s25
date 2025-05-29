@@ -10,8 +10,6 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 import os
 
-import FGSM_Perturbed_Images_Facenet
-
 # Data Preparation
 
 #Constants
