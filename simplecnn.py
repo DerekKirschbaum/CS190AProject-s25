@@ -110,7 +110,7 @@ def compute_accuracy(model, data_loader):
 # Model Training
 
 
-def train_model(batch_size, epochs, lr, weight_decay):
+def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
     val_loader = DataLoader(val_set, batch_size = 512)
     val_accuracy = 0
 
@@ -140,16 +140,19 @@ def train_model(batch_size, epochs, lr, weight_decay):
 
 def save_model(model):
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-    torch.save(model, MODEL_PATH)
+    torch.save(model.state_dict(), MODEL_PATH)
 
 def load_model(): 
-    model = torch.load(MODEL_PATH, weights_only = False)
+    model = SimpleCNN()
+    model.load_state_dict(torch.load(MODEL_PATH))
     return model
 
 
 if __name__ == "__main__":
     model = train_model(batch_size = 128, epochs = 5, lr = 0.001, weight_decay = 0.001)
     save_model(model)
+
+    
     
 
 
