@@ -40,7 +40,7 @@ def embed_tensor(face_tensor):
     return emb.cpu().numpy()[0]
 
 # ── ORIGINAL TRAIN / TEST ───────────────────────────────────────────────────────
-def train_model(model_name: str, data_dir: str, celebrities: list, train_per_celeb: int = TRAIN_K):
+def train_model(model_name: str, data_dir: str, celebrities: list = CELEBS, train_per_celeb: int = TRAIN_K):
     class_means = {}
     for celeb in celebrities:
         img_paths = sorted(glob.glob(os.path.join(data_dir, celeb, '*.*')))
@@ -49,6 +49,8 @@ def train_model(model_name: str, data_dir: str, celebrities: list, train_per_cel
         mean_emb = np.mean(embs, axis=0)
         class_means[celeb] = mean_emb / np.linalg.norm(mean_emb)
     return class_means
+
+
 
 def test_model(model_name: str,
                data_dir: str,
@@ -81,7 +83,7 @@ def test_model(model_name: str,
 
 # ── SINGLE-STEP FGSM (classification loss) ───────────────────────────────────────
 
-def generate_FGSM(face_tensor, class_means, celebrities, eps=EPSILON):
+def generate_FGSM(face_tensor, class_means, celebrities = CELEBS, eps=EPSILON):
     """
     Single-step FGSM: perturb face_tensor to *maximize* the cross-entropy
     loss on the five-way “logits” = embedding·class_mean.
