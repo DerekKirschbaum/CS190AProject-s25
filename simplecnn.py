@@ -177,7 +177,9 @@ if __name__ == "__main__":
     train_set, val_set, test_set = load_data(data_dir, img_height, img_length)
 
 
+
     model_path = "models/simplecnn.pth"
+    
     build_new_model = False
 
     #Build the Model
