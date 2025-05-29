@@ -61,12 +61,12 @@ def universal_perturbation(model, dataset: TensorDataset, celebrity: str, epsilo
           pred_logits = model(perturbed_image.unsqueeze(0))  # batch of 1
           pred_label = torch.argmax(pred_logits, dim=1)
 
-          if pred_label.item == label: #condition to update v
+          if pred_label.item() == label: #condition to update v
                 gradient = compute_gradient(model, perturbed_image, celebrity)
                 v = v + (alpha * gradient.sign())
                 v = torch.max(torch.min(v, epsilon * torch.ones_like(v)), -epsilon * torch.ones_like(v))
 
-  return v.detatch()  #tensor [3,160,160]
+  return v.detach()  #tensor [3,160,160]
 
 
 def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, alpha = 0.01, iters = 10, is_embed = False): #model, TensorDataset, epsilon (int) 
@@ -79,14 +79,23 @@ def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, 
       perturbed_images.append(perturb_image_fgsm(model, image, celebrity, epsilon, is_embed))
     elif(attack == 'pgd'): 
       perturbed_images.append(perturb_image_pgd(model, image, celebrity, epsilon, alpha, iters, is_embed))
-    elif (attack == 'universal'):
-      v = universal_perturbation(model, dataset, epsilon, alpha=alpha, iters=iters)
-      perturbed_image = image + v
-      perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
-      perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)
-    
     label = torch.tensor(label)
     labels.append(label)
+
+  if attack == 'universal':
+    # Compute the universal perturbation v (shared across all images)
+    v = universal_perturbation(model, dataset, celebrity, epsilon=epsilon, alpha=alpha, iters=iters)
+    
+    # Clear previously appended lists
+    perturbed_images = []
+    labels = []
+
+    for image, label in dataset:
+      perturbed = image + v
+      perturbed = torch.max(torch.min(perturbed, image + epsilon), image - epsilon)  # Project to ε-ball
+      perturbed = torch.clamp(perturbed, -1.0, 1.0)
+      perturbed_images.append(perturbed)
+      labels.append(torch.tensor(label))
 
   perturbed_images = torch.stack(perturbed_images)
   labels = torch.stack(labels)
