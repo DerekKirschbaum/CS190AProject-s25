@@ -86,28 +86,27 @@ class SimpleCNN(nn.Module):
         x = self.fc4(x)
 
         return x
-
 # Computing Accuracy
 
-def compute_accuracy_cnn(model, data_loader):
-  correct = 0
-  total = 0
+def compute_accuracy_cnn(model, dataset):
+    correct = 0
+    total = 0
 
-  model.eval()
-  with torch.no_grad():
-      for images, labels in data_loader:
-          outputs = model(images)
+    model.eval()
+    for image, label in dataset:
+        outputs = model(image)
+        _, predicted = torch.max(outputs, 1)
+        if(label == predicted): 
+            correct += 1
+        total += 1
+    accuracy = correct / total * 100
+    return accuracy
 
-          _, predicted = torch.max(outputs, 1)
-          total += labels.size(0)
-          correct += (predicted == labels).sum().item()
-  accuracy = correct / total * 100
-  return accuracy
+
 
 # Model Training
 
 def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
-    val_loader = DataLoader(val_set, batch_size = 512)
     max_validation_accuracy = 0
     val_accuracy = 0
 
@@ -127,8 +126,8 @@ def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
           optimizer.step()
           print("Loss:", round(loss.item(), 3))
 
-      val_accuracy = compute_accuracy_cnn(model, val_loader)
-      train_accuracy = compute_accuracy_cnn(model, train_loader)
+      val_accuracy = compute_accuracy_cnn(model, val_set)
+      train_accuracy = compute_accuracy_cnn(model, train_set)
 
       if(val_accuracy > max_validation_accuracy): 
           max_validation_accuracy = val_accuracy
