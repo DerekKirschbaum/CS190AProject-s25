@@ -266,7 +266,7 @@ if __name__ == "__main__":
 
 
 
-# def compute_gradient(means, image, celebrity )  # tensor [3,160,160], celebrity = 'scarlett', 'brad', ...
+# def compute_gradient(means, image, celebrity )  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
 
 
 #     returns gradient #tensor [3,160,160]

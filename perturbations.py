@@ -23,7 +23,6 @@ def save_img(img: torch.tensor, path: str):
     plt.savefig(path, dpi = 100, bbox_inches = "tight", pad_inches = 0)
 
 
-
 def perturb_image_fgsm(model, image: torch.Tensor, celebrity: str, epsilon: float): # imagetensor [3,160,160] , celebrity = 'Brad Pitt, Angelina Jolie, ...'
   gradient = compute_gradient(model, image, celebrity)
   perturbed_image = epsilon * torch.sign(gradient) + image.clone()
@@ -38,6 +37,12 @@ def perturb_image_pgd(model, image: torch.Tensor, celebrity: str, epsilon: float
     perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
     perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
+
+def universal_perturbation(model, iamge: torch.Tensor, celebrity: str, epsilon: float): 
+
+  compute_gradient()
+  return perturbed_image  #tensor [3,160,160]
+
 
 
 
