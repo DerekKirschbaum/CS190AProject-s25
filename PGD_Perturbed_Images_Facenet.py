@@ -9,10 +9,17 @@ from PIL import Image
 from torchvision import transforms
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────────
+<<<<<<< Updated upstream
 DATA_DIR   = "./resized_faces"
 CELEBS     = ["Brad_Pitt_faces", "Tom_Hanks_faces", "Scarlett_Johansson_faces", "Megan_Fox_faces", "Angelina_Jolie_faces"]
 TRAIN_K    = 250
 TEST_K     = 100
+=======
+DATA_DIR   = "./just_faces"
+CELEBS     = ["Brad Pitt", "Tom Hanks", "Scarlett Johansson", "Megan Fox", "Angelina Jolie"]
+TRAIN_K    = 80
+TEST_K     = 20
+>>>>>>> Stashed changes
 DEVICE     = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 EPSILON    = 0.07   # max per-pixel change on [-1,1] scale
 
