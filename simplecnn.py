@@ -152,6 +152,22 @@ def load_model():
     model.load_state_dict(torch.load(MODEL_PATH))
     return model
 
+def compute_gradient(model, image: torch.Tensor, celebrity: str):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
+    model.eval()
+    
+    image = image.clone().unsqueeze(0).requires_grad_(True)
+    
+    idx = classes.index(celebrity)
+    label = torch.tensor([idx], dtype=torch.long)
+
+    output = model(image)  
+    loss   = CRITERION(output, label)
+    loss.backward()
+    
+    grad = image.grad.detach().squeeze(0)  # [3,160,160]
+    grad = grad.clamp(-1,1)
+    return grad
+
 
 if __name__ == "__main__":
     model = train_model(batch_size = 128, epochs = 10, lr = 0.001, weight_decay = 0.001)

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import os
 from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
-from simplecnn import classes, test_set, load_model, CRITERION, compute_accuracy
+from simplecnn import classes, test_set, load_model, CRITERION, compute_accuracy, compute_gradient
 
 import FGSM_Perturbed_Images_Facenet
 
@@ -23,22 +23,6 @@ def save_img(img: torch.tensor, path: str):
     plt.savefig(path, dpi = 100, bbox_inches = "tight", pad_inches = 0)
 
 
-def compute_gradient(model, image: torch.Tensor, celebrity: str):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
-    model.eval()
-    
-    image = image.clone().unsqueeze(0).requires_grad_(True)
-    
-    idx = classes.index(celebrity)
-    label = torch.tensor([idx], dtype=torch.long)
-
-    output = model(image)  
-    loss   = CRITERION(output, label)
-    loss.backward()
-    
-    grad = image.grad.detach().squeeze(0)  # [3,160,160]
-    grad = grad.clamp(-1,1)
-    return grad
-
 
 def perturb_image_fgsm(model, image: torch.Tensor, celebrity: str, epsilon: float): # imagetensor [3,160,160] , celebrity = 'Brad Pitt, Angelina Jolie, ...'
   gradient = compute_gradient(model, image, celebrity)
@@ -54,7 +38,6 @@ def perturb_image_pgd(model, image: torch.Tensor, celebrity: str, epsilon: float
     perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
     perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
-
 
 
 

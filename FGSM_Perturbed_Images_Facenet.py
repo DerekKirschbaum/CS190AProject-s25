@@ -9,7 +9,7 @@ from PIL import Image
 from torchvision import transforms
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────────
-DATA_DIR   = "./just_faces"
+DATA_DIR   = "./resized_faces"
 CELEBS     = ["Brad_Pitt_faces", "Tom_Hanks_faces", "Scarlett_Johansson_faces", "Megan_Fox_faces", "Angelina_Jolie_faces"]
 TRAIN_K    = 250
 TEST_K     = 100
