@@ -89,7 +89,7 @@ class SimpleCNN(nn.Module):
 
 # Computing Accuracy
 
-def compute_accuracy(model, data_loader):
+def compute_accuracy_cnn(model, data_loader):
   correct = 0
   total = 0
 
@@ -127,8 +127,8 @@ def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
           optimizer.step()
           print("Loss:", round(loss.item(), 3))
 
-      val_accuracy = compute_accuracy(model, val_loader)
-      train_accuracy = compute_accuracy(model, train_loader)
+      val_accuracy = compute_accuracy_cnn(model, val_loader)
+      train_accuracy = compute_accuracy_cnn(model, train_loader)
 
       if(val_accuracy > max_validation_accuracy): 
           max_validation_accuracy = val_accuracy
@@ -142,7 +142,7 @@ def save_model(model):
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     torch.save(model.state_dict(), MODEL_PATH)
 
-def load_model(): 
+def load_simple_cnn(): 
     model = SimpleCNN()
     model.load_state_dict(torch.load(MODEL_PATH))
     return model

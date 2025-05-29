@@ -10,7 +10,7 @@ from torchvision import transforms
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────────
 DATA_DIR   = "./Dataset"
-CELEBS     = ["Brad Pitt", "Tom Hanks", "Scarlett Johansson", "Megan Fox", "Angelina Jolie"]
+CELEBS     = ['Angelina Jolie', 'Brad Pitt', 'Megan Fox', 'Scarlett Johansson', 'Tom Hanks']
 TRAIN_K    = 250
 TEST_K     = 100
 DEVICE     = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -107,22 +107,35 @@ def compute_gradient(class_means, image, celebrity):  # tensor [3,160,160], cele
     return grad
 
 def forward(class_means, image): 
-    emb = embed_tensor(load_face_tensor(image))
+    emb = embed_tensor(image)
     emb = emb / np.linalg.norm(emb)
     sims = {c: np.dot(emb, class_means[c]) for c in CELEBS}
     pred = max(sims, key=sims.get)
+    # print(sims)
     return pred
 
 def save_means(means): 
     np.save("./models/class_means.npy", means)
 
-def load_means(): 
+def load_vgg_means(): 
     return np.load("./models/class_means.npy", allow_pickle=True).item()
+
+
+def compute_accuracy_vgg(means, test_set): 
+    correct = 0
+    total = 0
+    for image, label in test_set: 
+        celebrity = CELEBS[label]
+        pred = forward(means, image)
+        if(celebrity == pred): 
+            correct += 1
+        total += 1
+    return (correct / total) * 100
+
 
 # ── MAIN ─────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    means = np.load("class_means.npy", allow_pickle=True).item()
     means = train_model("Facenet", DATA_DIR, CELEBS, train_per_celeb = TRAIN_K)
     save_means(means)
-    test_model("Facenet", DATA_DIR, CELEBS, means)
+    # test_model("Facenet", DATA_DIR, CELEBS, means)
 
