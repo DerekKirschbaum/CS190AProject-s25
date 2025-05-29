@@ -9,10 +9,10 @@ from PIL import Image
 from torchvision import transforms
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────────
-DATA_DIR   = "/Users/agammakkar/Downloads/Celebrity-Faces-Dataset"
-CELEBS     = ["Brad Pitt", "Tom Hanks", "Scarlett Johansson", "Megan Fox", "Angelina Jolie"]
-TRAIN_K    = 80
-TEST_K     = 20
+DATA_DIR   = "./resized_faces"
+CELEBS     = ["Brad_Pitt_faces", "Tom_Hanks_faces", "Scarlett_Johansson_faces", "Megan_Fox_faces", "Angelina_Jolie_faces"]
+TRAIN_K    = 250
+TEST_K     = 100
 DEVICE     = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 EPSILON    = 0.07   # max per-pixel change on [-1,1] scale
 
@@ -96,7 +96,7 @@ def generate_PGD(face_tensor, class_means, celebrities, eps=EPSILON, alpha=0.01,
         emb = model(x)
         embn = F.normalize(emb, p=2, dim=1)
         logits = embn @ cm_torch
-        y_true = torch.tensor([celebrities.index("Brad Pitt")], device=DEVICE)
+        y_true = torch.tensor([celebrities.index("Brad_Pitt_faces")], device=DEVICE)
         loss = F.cross_entropy(logits, y_true)
         loss.backward()
 
@@ -129,14 +129,16 @@ def test_PGD(model_name, data_dir, celebrities, class_means,
         for p in test_paths:
             ft = load_face_tensor(p)  # your existing loader
 
-            if celeb == "Brad Pitt":
+            if celeb == "Brad_Pitt_faces":
                 adv, delta = generate_PGD(ft, class_means, celebrities, eps, alpha=0.01, iters=10)
 
                 if not plotted:
                     orig_np = ((ft.cpu().numpy().transpose(1,2,0) + 1) / 2)
+                    orig_np = np.clip(orig_np, 0, 1)
                     dp      = delta.cpu().numpy().transpose(1,2,0)
                     dp      = (dp - dp.min())/(dp.max()-dp.min())
                     adv_np  = ((adv.cpu().numpy().transpose(1,2,0) + 1) / 2)
+                    adv_np = np.clip(adv_np, 0, 1)
 
                     plt.figure(); plt.imshow(orig_np); plt.title("Original");    plt.axis('off')
                     plt.figure(); plt.imshow(dp);      plt.title("Perturbation");plt.axis('off')
@@ -169,38 +171,69 @@ def save_all_bradd_perturbations_cropped(class_means, celebrities, eps=EPSILON, 
     Generates and saves 100 adversarial (PGD) face crops of Brad Pitt.
     Saves each 160×160 perturbed face as a standalone image (no resizing or pasting).
     """
-    out_dir = os.path.expanduser("~/Downloads/Bradd-Pert-Cropped")
+    out_dir = os.path.join(".", f"Bradd-PGD-test-{eps}")
     os.makedirs(out_dir, exist_ok=True)
 
-    # Take first 100 Brad Pitt images
-    brad_paths = sorted(glob.glob(os.path.join(DATA_DIR, "Brad Pitt", "*.*")))[:100]
-    for i, p in enumerate(brad_paths):
+    # # Take first 350 Brad Pitt images
+    brad_paths = sorted(glob.glob(os.path.join(DATA_DIR, "Brad_Pitt_faces", "*.*")))[:350]
+    # for i, p in enumerate(brad_paths):
+    #     img = Image.open(p).convert("RGB")
+
+    #     # Detect face bounding box using MTCNN
+    #     boxes, _ = mtcnn.detect(img)
+    #     if boxes is None or len(boxes) == 0:
+    #         # If detection fails, perturb entire resized image
+    #         face_crop = to_tensor(img.resize((160, 160))).mul(2.).sub(1.)
+    #     else:
+    #         x1, y1, x2, y2 = [int(b) for b in boxes[0]]
+    #         crop = img.crop((x1, y1, x2, y2))
+    #         face_crop = to_tensor(crop.resize((160, 160))).mul(2.).sub(1.)
+
+    #     # Generate PGD adversarial example
+    #     adv_tensor, _ = generate_PGD(face_crop, class_means, celebrities, eps, alpha=alpha, iters=iters)
+
+    #     # Convert to [0,255] uint8 format
+    #     adv_np = ((adv_tensor.cpu().numpy().transpose(1, 2, 0) + 1) / 2 * 255).astype(np.uint8)
+    #     adv_img = Image.fromarray(adv_np).resize((x2-x1, y2-y1))
+
+    #     # Save adversarial face crop
+    #     save_path = os.path.join(out_dir, f"adv_brad_{i:03d}.png")
+    #     adv_img.save(save_path)
+    for p in brad_paths:
+        # 1) load full-res
         img = Image.open(p).convert("RGB")
 
-        # Detect face bounding box using MTCNN
+        # 2) detect face bounding box
         boxes, _ = mtcnn.detect(img)
-        if boxes is None or len(boxes) == 0:
-            # If detection fails, perturb entire resized image
-            face_crop = to_tensor(img.resize((160, 160))).mul(2.).sub(1.)
+        if boxes is None or len(boxes)==0:
+            # if no face found, perturb whole image
+            x1, y1, x2, y2 = 0, 0, img.width, img.height
         else:
             x1, y1, x2, y2 = [int(b) for b in boxes[0]]
-            crop = img.crop((x1, y1, x2, y2))
-            face_crop = to_tensor(crop.resize((160, 160))).mul(2.).sub(1.)
 
-        # Generate PGD adversarial example
+        # 3) crop that rectangle (no alignment)
+        crop = img.crop((x1, y1, x2, y2))
+
+        # 4) make a 160×160 tensor in [-1,1]
+        face_crop = to_tensor(crop.resize((160,160))).mul(2.).sub(1.)
+
+        # 5) generate FGSM on that patch
         adv_tensor, _ = generate_PGD(face_crop, class_means, celebrities, eps, alpha=alpha, iters=iters)
 
-        # Convert to [0,255] uint8 format
-        adv_np = ((adv_tensor.cpu().numpy().transpose(1, 2, 0) + 1) / 2 * 255).astype(np.uint8)
-        adv_img = Image.fromarray(adv_np)
+        # 6) convert back to [0,255] uint8 and resize to original box
+        adv_np = ((adv_tensor.cpu().numpy().transpose(1,2,0) + 1)/2 * 255).astype(np.uint8)
+        adv_patch = Image.fromarray(adv_np).resize((x2-x1, y2-y1))
 
-        # Save adversarial face crop
-        save_path = os.path.join(out_dir, f"adv_brad_{i:03d}.png")
-        adv_img.save(save_path)
+        # 7) paste the adversarial patch over the original
+        out = img.copy()
+        out.paste(adv_patch, (x1, y1))
+
+        # 8) save with same resolution
+        out.save(os.path.join(out_dir, os.path.basename(p)))
 
 # ── MAIN ─────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    means = train_model("Facenet", DATA_DIR, CELEBS)
-    # test_model("Facenet", DATA_DIR, CELEBS, means)
-    test_PGD("Facenet", DATA_DIR, CELEBS, means, eps=EPSILON)
+    means = np.load("class_means.npy", allow_pickle=True).item()
+    #test_model("Facenet", DATA_DIR, CELEBS, means)
+    #test_PGD("Facenet", DATA_DIR, CELEBS, means, eps=EPSILON)
     save_all_bradd_perturbations_cropped(means, CELEBS, eps=EPSILON)
