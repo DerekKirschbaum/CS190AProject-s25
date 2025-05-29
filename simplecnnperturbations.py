@@ -7,6 +7,8 @@ from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 from simplecnn import classes, test_set, load_model, CRITERION, compute_accuracy
 
+import FGSM_Perturbed_Images_Facenet
+
 
 FIGURE_PATH = './figures/'
 
@@ -38,21 +40,34 @@ def compute_gradient(model, image: torch.Tensor, celebrity: str):  #image: Tenso
     return grad
 
 
-
 def perturb_image_fgsm(model, image: torch.Tensor, celebrity: str, epsilon: float): # imagetensor [3,160,160] , celebrity = 'Brad Pitt, Angelina Jolie, ...'
   gradient = compute_gradient(model, image, celebrity)
   perturbed_image = epsilon * torch.sign(gradient) + image.clone()
   perturbed_image = perturbed_image.clamp(-1,1)
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
 
+def perturb_image_pgd(model, image: torch.Tensor, celebrity: str, epsilon: float, alpha: float, iters = int): # imagetensor [3,160,160] , celebrity = 'Brad Pitt, Angelina Jolie, ...'
+  perturbed_image = image.clone()
+  for _ in range(iters): 
+    gradient = compute_gradient(model, perturbed_image, celebrity)
+    perturbed_image += alpha * gradient.sign()
+    perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
+    perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
+  return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
 
-def perturb_dataset_fgsm(model, dataset, epsilon: float): #model, torch.Dataset, epsilon (int) 
+
+
+
+def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, alpha = 0.01, iters = 10): #model, TensorDataset, epsilon (int) 
   perturbed_images = []
   labels = []
 
   for image, label in dataset:
     celebrity = classes[label]
-    perturbed_images.append(perturb_image_fgsm(model, image, celebrity, epsilon))
+    if(attack == 'fgsm'):
+      perturbed_images.append(perturb_image_fgsm(model, image, celebrity, epsilon))
+    elif(attack == 'pgd'): 
+      perturbed_images.append(perturb_image_pgd(model, image, celebrity, epsilon, alpha, iters))
     label = torch.tensor(label)
     labels.append(label)
 
@@ -73,24 +88,37 @@ if __name__ == "__main__":
     
     gradient = compute_gradient(model, image, celebrity)
 
-    epsilon = 0.08
+    epsilon = 0.07
 
-    save_img(epsilon * torch.sign(gradient), path = FIGURE_PATH + 'Gradient.png',)
+    alpha = 0.1
 
-    perturbed_image = perturb_image_fgsm(model, image, celebrity, epsilon = epsilon)
+    iters = 10
 
-    save_img(perturbed_image, path = FIGURE_PATH + 'Perturbed Image.png')
+    # save_img(epsilon * torch.sign(gradient), path = FIGURE_PATH + 'Epsilon * Sign(Gradient).png',)
 
-    perturbed_dataset = perturb_dataset_fgsm(model, test_set, epsilon = epsilon)
-    perturbed_loader = DataLoader(dataset = perturbed_dataset, batch_size = 128)
-    test_loader = DataLoader(dataset = test_set, batch_size = 128)
+    # perturbed_image_fgsm = perturb_image_fgsm(model, image, celebrity, epsilon = epsilon)
 
-    print("perturbed accuracy", compute_accuracy(model, perturbed_loader))
+    # perturbed_image_pgd = perturb_image_pgd(model, image, celebrity, epsilon, alpha, iters)
 
-    print("test_accuracy", compute_accuracy(model, test_loader))
+    # save_img(perturbed_image_fgsm, path = FIGURE_PATH + 'Perturbed Image FGSM.png')
 
-    print(perturbed_dataset[0][1])
-    print(test_set[0][1])
+    # save_img(perturbed_image_pgd, path = FIGURE_PATH + 'Perturbed Image PGD.png')
+
+    # perturbed_dataset_fgsm = perturb_dataset(model, test_set, epsilon = epsilon, attack = 'fgsm')
+    # perturbed_dataset_pgd =perturb_dataset(model, test_set, epsilon, 'pgd', alpha, iters )
+
+    # perturbed_fgsm_loader = DataLoader(dataset = perturbed_dataset_fgsm, batch_size = 128)
+    # perturbed_pgd_loader = DataLoader(dataset = perturbed_dataset_pgd, batch_size = 128)
+    
+    # test_loader = DataLoader(dataset = test_set, batch_size = 128)
+
+    # print("perturbed fgsm accuracy", compute_accuracy(model, perturbed_fgsm_loader))
+
+    # print("perturbed pgd accuracy", compute_accuracy(model, perturbed_pgd_loader))
+
+    # print("test_accuracy", compute_accuracy(model, test_loader))
+
+
 
 
 

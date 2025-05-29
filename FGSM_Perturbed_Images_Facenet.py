@@ -115,6 +115,8 @@ def generate_FGSM(face_tensor, class_means, celebrities = CELEBS, eps=EPSILON):
     return adv.squeeze(0).detach(), delta.squeeze(0).detach()
 
 
+
+
 # ── TEST FGSM ────────────────────────────────────────────────────────────────────
 
 def test_FGSM(model_name, data_dir, celebrities, class_means,
@@ -264,4 +266,7 @@ if __name__ == "__main__":
 
 
 
+# def compute_gradient(means, image, celebrity )  # tensor [3,160,160], celebrity = 'scarlett', 'brad', ...
 
+
+#     returns gradient #tensor [3,160,160]

@@ -68,7 +68,7 @@ class SimpleCNN(nn.Module):
         self.fc3 = nn.Linear(84,         20)
         self.fc4 = nn.Linear(20,  len(classes))
 
-        self.dropout = nn.Dropout(p = 0.25)
+        self.dropout = nn.Dropout(p = 0)
 
 
     def forward(self, x):
@@ -112,6 +112,7 @@ def compute_accuracy(model, data_loader):
 
 def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
     val_loader = DataLoader(val_set, batch_size = 512)
+    max_validation_accuracy = 0
     val_accuracy = 0
 
     model = SimpleCNN()
@@ -133,6 +134,10 @@ def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
       val_accuracy = compute_accuracy(model, val_loader)
       train_accuracy = compute_accuracy(model, train_loader)
 
+      if(val_accuracy > max_validation_accuracy): 
+          max_validation_accuracy = val_accuracy
+          save_model(model)
+
       print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
 
     return model
@@ -149,8 +154,7 @@ def load_model():
 
 
 if __name__ == "__main__":
-    model = train_model(batch_size = 128, epochs = 5, lr = 0.001, weight_decay = 0.001)
-    save_model(model)
+    model = train_model(batch_size = 128, epochs = 10, lr = 0.001, weight_decay = 0.001)
 
     
     
