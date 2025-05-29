@@ -41,8 +41,6 @@ def perturb_image_pgd(model, image: torch.Tensor, celebrity: str, epsilon: float
     perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
 
-<<<<<<< Updated upstream
-=======
 def universal_perturbation(model, dataset: TensorDataset, celebrity: str, epsilon: float, alpha: float, iters = int): 
   v = torch.zeros_like(dataset[0][0])
   for _ in range(iters):
@@ -64,7 +62,6 @@ def universal_perturbation(model, dataset: TensorDataset, celebrity: str, epsilo
 
   return v.detatch()  #tensor [3,160,160]
 
->>>>>>> Stashed changes
 
 def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, alpha = 0.01, iters = 10): #model, TensorDataset, epsilon (int) 
   perturbed_images = []
