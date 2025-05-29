@@ -106,6 +106,13 @@ def compute_gradient(class_means, image, celebrity):  # tensor [3,160,160], cele
 
     return grad
 
+def forward(class_means, image): 
+    emb = embed_tensor(load_face_tensor(image))
+    emb = emb / np.linalg.norm(emb)
+    sims = {c: np.dot(emb, class_means[c]) for c in CELEBS}
+    pred = max(sims, key=sims.get)
+    return pred
+
 def save_means(means): 
     np.save("./models/class_means.npy", means)
 
