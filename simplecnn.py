@@ -16,7 +16,7 @@ import os
 HEIGHT = 160
 LENGTH = 160
 CRITERION = nn.CrossEntropyLoss() #Cross Entropy (MLE assuming Categorical Distribution)
-DATA_DIR = './just_faces'
+DATA_DIR = './Dataset'
 MODEL_PATH = './models/simplecnn.pth'
 
 
@@ -25,7 +25,24 @@ torch.manual_seed(42)
 np.random.seed(42)
 
 
+# Formatting the Dataset
 
+transform = transforms.Compose([
+    transforms.Resize((HEIGHT, LENGTH)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean = (0.5,0.5,0.5), std = (0.5,0.5,0.5)) # normalizes from [0,1] --> [-1,1]
+])
+
+dataset = datasets.ImageFolder(root = DATA_DIR, transform = transform)
+classes = dataset.classes
+
+# Train/Validation/Test Split
+total_size = len(dataset)  # 70/15/15 Trin/Validation/Test split
+train_size = int(0.7 * total_size)
+val_size = int(0.15 * total_size)
+test_size = total_size - train_size - val_size
+
+train_set, val_set, test_set = random_split(dataset, [train_size, val_size, test_size])
 
 #Model Definition
 
@@ -68,9 +85,7 @@ class SimpleCNN(nn.Module):
         x = self.dropout(x)
         x = self.fc4(x)
 
-
         return x
-
 
 # Computing Accuracy
 
@@ -90,7 +105,6 @@ def compute_accuracy(model, data_loader):
   return accuracy
 
 # Model Training
-
 
 def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
     val_loader = DataLoader(val_set, batch_size = 512)
@@ -123,7 +137,6 @@ def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
       print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
 
     return model
-
 
 def save_model(model):
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)

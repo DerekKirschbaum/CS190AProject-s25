@@ -9,8 +9,8 @@ from PIL import Image
 from torchvision import transforms
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────────
-DATA_DIR   = "./resized_faces"
-CELEBS     = ["Brad_Pitt_faces", "Tom_Hanks_faces", "Scarlett_Johansson_faces", "Megan_Fox_faces", "Angelina_Jolie_faces"]
+DATA_DIR   = "./Dataset"
+CELEBS     = ["Brad Pitt", "Tom Hanks", "Scarlett Johansson", "Megan Fox", "Angelina Jolie"]
 TRAIN_K    = 250
 TEST_K     = 100
 DEVICE     = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -78,8 +78,44 @@ def test_model(model_name: str,
         acc = correct_per_celeb[celeb] / test_per_celeb * 100
         print(f"{celeb:15s} accuracy: {acc:.2f}%")
 
+def compute_gradient(class_means, image, celebrity):  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
+
+       # 1) build a stacked tensor of all class‐means: shape (512,5)
+    cm_torch = torch.stack([torch.tensor(class_means[c], device=DEVICE, dtype=torch.float32)
+                            for c in CELEBS], dim=1)
+    # 2) prepare input for gradient
+    x = image.unsqueeze(0).clone().detach().requires_grad_(True).to(DEVICE)  # (1,3,160,160)
+
+    # 3) forward → embedding → normalize → compute 5 “logits”
+    emb = model(x)                                          # (1,512)
+    embn = F.normalize(emb, p=2, dim=1)                     # (1,512)
+    logits = embn @ cm_torch                                # (1,5)
+
+    y_true = CELEBS.index(celebrity)
+    label = torch.tensor([y_true], dtype=torch.long)
+
+    # 5) cross-entropy loss (we want to *increase* this)
+    loss = F.cross_entropy(logits, label)
+    loss.backward()
+
+    # 6) FGSM step: move *with* the gradient sign to increase loss
+
+    grad = x.grad   
+    grad = grad.squeeze(dim = 0)                        # (1,3,160,160)
+    
+
+    return grad
+
+def save_means(means): 
+    np.save("./models/class_means.npy", means)
+
+def load_means(): 
+    return np.load("./models/class_means.npy", allow_pickle=True).item()
+
 # ── MAIN ─────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     means = np.load("class_means.npy", allow_pickle=True).item()
+    means = train_model("Facenet", DATA_DIR, CELEBS, train_per_celeb = TRAIN_K)
+    save_means(means)
     test_model("Facenet", DATA_DIR, CELEBS, means)
 

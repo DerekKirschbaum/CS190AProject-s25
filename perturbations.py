@@ -7,7 +7,7 @@ from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 from simplecnn import classes, test_set, load_model, CRITERION, compute_accuracy, compute_gradient
 
-import FGSM_Perturbed_Images_Facenet
+import facenet
 
 
 FIGURE_PATH = './figures/'
@@ -23,8 +23,11 @@ def save_img(img: torch.tensor, path: str):
     plt.savefig(path, dpi = 100, bbox_inches = "tight", pad_inches = 0)
 
 
-def perturb_image_fgsm(model, image: torch.Tensor, celebrity: str, epsilon: float): # imagetensor [3,160,160] , celebrity = 'Brad Pitt, Angelina Jolie, ...'
-  gradient = compute_gradient(model, image, celebrity)
+def perturb_image_fgsm(model, image: torch.Tensor, celebrity: str, epsilon: float, is_embed: bool = False): # imagetensor [3,160,160] , celebrity = 'Brad Pitt, Angelina Jolie, ...'
+  if(is_embed == True): 
+    gradient =  facenet.compute_gradient(model, image, celebrity)
+  elif (is_embed == False):
+    gradient = compute_gradient(model, image, celebrity)
   perturbed_image = epsilon * torch.sign(gradient) + image.clone()
   perturbed_image = perturbed_image.clamp(-1,1)
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
@@ -37,13 +40,6 @@ def perturb_image_pgd(model, image: torch.Tensor, celebrity: str, epsilon: float
     perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
     perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
-
-def universal_perturbation(model, iamge: torch.Tensor, celebrity: str, epsilon: float): 
-
-  compute_gradient()
-  return perturbed_image  #tensor [3,160,160]
-
-
 
 
 def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, alpha = 0.01, iters = 10): #model, TensorDataset, epsilon (int) 
@@ -70,11 +66,16 @@ if __name__ == "__main__":
     label = test_set[0][1]
     celebrity = classes[label]
 
-    model = load_model()
+    cnn_model = load_model()
 
     save_img(image, path = FIGURE_PATH + 'Original Image.png')
+    vgg_model = facenet.load_means()
     
-    gradient = compute_gradient(model, image, celebrity)
+    perturbed_image_cnn = perturb_image_fgsm(cnn_model, image, celebrity, is_embed = False, epsilon = 1)
+    perturbed_image_vgg = perturb_image_fgsm(vgg_model, image, celebrity, is_embed = True, epsilon = 0.4)
+
+    save_img(perturbed_image_vgg, path = FIGURE_PATH + 'VGG Grad.png')
+
 
     epsilon = 0.07
 
@@ -105,6 +106,8 @@ if __name__ == "__main__":
     # print("perturbed pgd accuracy", compute_accuracy(model, perturbed_pgd_loader))
 
     # print("test_accuracy", compute_accuracy(model, test_loader))
+
+
 
 
 
