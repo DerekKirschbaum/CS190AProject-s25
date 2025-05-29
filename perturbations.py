@@ -41,6 +41,30 @@ def perturb_image_pgd(model, image: torch.Tensor, celebrity: str, epsilon: float
     perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
 
+<<<<<<< Updated upstream
+=======
+def universal_perturbation(model, dataset: TensorDataset, celebrity: str, epsilon: float, alpha: float, iters = int): 
+  v = torch.zeros_like(dataset[0][0])
+  for _ in range(iters):
+        for image, label in dataset:
+          image = image.to(torch.float32)
+          perturbed_image = image + v
+          perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
+          perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)
+
+          #Run image through the model
+          celebrity = classes[label]
+          pred_logits = model(perturbed_image.unsqueeze(0))  # batch of 1
+          pred_label = torch.argmax(pred_logits, dim=1)
+
+          if pred_label.item == label: #condition to update v
+                gradient = compute_gradient(model, perturbed_image, celebrity)
+                v = v + (alpha * gradient.sign())
+                v = torch.max(torch.min(v, epsilon * torch.ones_like(v)), -epsilon * torch.ones_like(v))
+
+  return v.detatch()  #tensor [3,160,160]
+
+>>>>>>> Stashed changes
 
 def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, alpha = 0.01, iters = 10): #model, TensorDataset, epsilon (int) 
   perturbed_images = []
@@ -52,6 +76,12 @@ def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, 
       perturbed_images.append(perturb_image_fgsm(model, image, celebrity, epsilon))
     elif(attack == 'pgd'): 
       perturbed_images.append(perturb_image_pgd(model, image, celebrity, epsilon, alpha, iters))
+    elif (attack == 'universal'):
+      v = universal_perturbation(model, dataset, epsilon, alpha=alpha, iters=iters)
+      perturbed_image = image + v
+      perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
+      perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)
+    
     label = torch.tensor(label)
     labels.append(label)
 
