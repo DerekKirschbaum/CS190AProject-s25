@@ -1,10 +1,10 @@
-from perturbations import perturb_dataset
+from perturbations import Adversary
 from vgg import VGG
 from simplecnn import SimpleCNN
-from datasets import train_set, test_set
+from datasets import test_set
 
 vgg_path = './models/vgg.npy'
-cnn_path = './models/simplecnn.pth'
+cnn_path = './models/simplecnn.npy'
 
 
 if __name__ == "__main__":
@@ -12,9 +12,9 @@ if __name__ == "__main__":
    vgg_model = VGG()
    cnn_model = SimpleCNN()
 
-   vgg_model.build(train_set = train_set, save_path = vgg_path)
    vgg_model.load(vgg_path)
    cnn_model.load(cnn_path)
+
 
    accuracy = vgg_model.compute_accuracy(test_set)
 
@@ -22,9 +22,11 @@ if __name__ == "__main__":
    
    epsilon = 0.25
 
-   perturbed_test_set = perturb_dataset(cnn_model, test_set, epsilon, attack = 'fgsm')
+   cnn_adv = Adversary(cnn_model)
 
-   perturbed_accuracy = vgg_model.compute_accuracy(perturbed_test_set)
+   cnn_perturbed_set = cnn_adv.perturb_dataset(test_set, eps = epsilon, attack = 'fgsm')
+
+   perturbed_accuracy = vgg_model.compute_accuracy(cnn_perturbed_set)
 
    print("perturbed transfer accuracy: ", perturbed_accuracy)
    

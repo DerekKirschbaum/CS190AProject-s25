@@ -4,9 +4,8 @@ import torch
 from datasets import classes
 
 class Adversary:
-    def __init__(self, model, classes: List[str], alpha=0.01, pgd_iters=10):
+    def __init__(self, model, alpha = 0.01, pgd_iters = 10):
         self.model = model
-        self.classes = classes
         self.alpha = alpha
         self.pgd_iters = pgd_iters
 
@@ -15,7 +14,7 @@ class Adversary:
         return clipped.clamp(-1.0, 1.0)
 
     def step(self, img, lbl, step_size):
-        grad = self.model.compute_gradient(img, self.classes[lbl])
+        grad = self.model.compute_gradient(img, classes[lbl])
         return img + step_size * grad.sign()
 
     def fgsm(self, img, lbl, eps):
@@ -33,7 +32,7 @@ class Adversary:
     def universal(self, img, v, eps):
         return self.clamp_eps(img, img + v, eps)
 
-    def make_universal(self, dataset: TensorDataset, eps, alpha=None, iters=None):
+    def make_universal(self, dataset, eps, alpha = None, iters = None):
         alpha = alpha or self.alpha
         iters = iters or self.pgd_iters
         v = torch.zeros_like(dataset[0][0])
@@ -55,12 +54,7 @@ class Adversary:
 
         return v.detach()
 
-    def perturb_dataset(
-        self,
-        dataset: TensorDataset,
-        eps: float,
-        attack: str
-    ) -> TensorDataset:
+    def perturb_dataset(self,  dataset, eps, attack):
         methods = {
             "fgsm": self.fgsm,
             "pgd":  self.pgd,
@@ -71,6 +65,9 @@ class Adversary:
         imgs, labs = [], []
         for img, lbl in dataset:
             fn = methods[attack]
-            imgs.append(fn(img, lbl))
+            imgs.append(fn(img, lbl, eps))
+            lbl = torch.tensor(lbl)
+            
             labs.append(lbl)
+        
         return TensorDataset(torch.stack(imgs), torch.stack(labs))
