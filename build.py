@@ -9,7 +9,7 @@ if __name__ == "__main__":
     vgg_model = VGG()
     cnn_model = SimpleCNN()
 
-    vgg_path = "./models/vgg.npy"
+    vgg_path = "./models/vgg.npy" #path for model to be saved at
     cnn_path = "./models/simplecnn.npy"
 
 
