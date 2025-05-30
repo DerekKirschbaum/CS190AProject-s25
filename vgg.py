@@ -7,7 +7,7 @@ from facenet_pytorch import MTCNN, InceptionResnetV1
 import matplotlib.pyplot as plt
 from PIL import Image
 from torchvision import transforms
-
+from typing import Dict
 from dataset import *
 
 CELEBS = classes
@@ -22,7 +22,7 @@ class VGGModel():
         self.mtcnn = MTCNN(image_size=160, margin=0, device=DEVICE)
         self.model = InceptionResnetV1(pretrained='vggface2').eval().to(DEVICE)
         self.to_tensor = transforms.ToTensor()
-
+        self.class_means: Dict[str, np.ndarray] = {}
 
     def load_face_tensor(self,path):
         """
@@ -35,7 +35,7 @@ class VGGModel():
             face = self.to_tensor(img.resize((160,160)))
         return face.mul(2.).sub(1.)  # scale [0,1]→[-1,1]
 
-    def embed_tensor(self,face_tensor):
+    def embed_tensor(self, face_tensor):
         """512-d L2-normalized embedding as a numpy array."""
         with torch.no_grad():
             emb = self.model(face_tensor.unsqueeze(0).to(DEVICE))
@@ -44,15 +44,13 @@ class VGGModel():
 
     # ── ORIGINAL TRAIN / TEST ───────────────────────────────────────────────────────
     def train_model(self, data_dir: str, celebrities: list, train_per_celeb: int = TRAIN_K):
-        class_means = {}
+        self.class_means = {}
         for celeb in celebrities:
             img_paths = sorted(glob.glob(os.path.join(data_dir, celeb, '*.*')))
             train_paths = img_paths[:train_per_celeb]
             embs = [self.embed_tensor(self.load_face_tensor(p)) for p in train_paths]
             mean_emb = np.mean(embs, axis=0)
-            class_means[celeb] = mean_emb / np.linalg.norm(mean_emb)
-        self.save_means(class_means)
-        return class_means
+            self.class_means[celeb] = mean_emb / np.linalg.norm(mean_emb)
 
     def test_model(self,model_name: str,
                 data_dir: str,
@@ -103,10 +101,9 @@ class VGGModel():
         loss = F.cross_entropy(logits, label)
         loss.backward()
 
-        # 6) FGSM step: move *with* the gradient sign to increase loss
 
         grad = x.grad   
-        grad = grad.squeeze(dim = 0)                        # (1,3,160,160)
+        grad = grad.squeeze(dim = 0)                        # (3,160,160)
         
 
         return grad
@@ -119,12 +116,12 @@ class VGGModel():
         pred = max(sims, key=sims.get)
         return pred
 
-    def save_means(self, means): 
-        np.save("./models/class_means.npy", means)
+    def save_means(self, file_path: str) -> None:
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        np.save(file_path, self.class_means)
 
-    def load(self): 
-        self.means = np.load("./models/class_means.npy", allow_pickle=True).item()
-        return self.means
+    def load_means(self, file_path: str) -> None:
+        self.class_means = np.load(file_path, allow_pickle=True).item()
 
 
     def compute_accuracy(self, test_set): 

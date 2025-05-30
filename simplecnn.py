@@ -122,13 +122,13 @@ class SimpleCNN(nn.Module):
 
         return model
 
-    def save(self):
-        os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-        torch.save(self.state_dict(), MODEL_PATH)
+    def save_model(self, file_path):
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        torch.save(self.state_dict(), file_path)
 
-    def load(self): 
+    def load(self, file_path): 
         model = SimpleCNN()
-        self = model.load_state_dict(torch.load(MODEL_PATH))
+        self = model.load_state_dict(torch.load(file_path))
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ if __name__ == "__main__":
     celebrity = classes[label]
 
     model = SimpleCNN()
-    model.load()
+    model.load_weights()
 
 
     save_img(image, path = FIGURE_PATH + 'Original Image.png')
