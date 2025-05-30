@@ -52,7 +52,7 @@ class SimpleCNN(nn.Module):
     
      # Model Training
 
-    def build(self, batch_size, epochs, lr, weight_decay, file_path):
+    def build(self, train_set, save_path, batch_size = 128, epochs = 10, lr = 0.001, weight_decay = 0.001, val_set = val_set):
         max_validation_accuracy = 0
         val_accuracy = 0
 
@@ -76,7 +76,7 @@ class SimpleCNN(nn.Module):
 
             if(val_accuracy > max_validation_accuracy): 
                 max_validation_accuracy = val_accuracy
-                self.save(file_path)
+                self.save(save_path)
 
             print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
 

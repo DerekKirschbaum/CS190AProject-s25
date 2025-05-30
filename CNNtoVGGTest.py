@@ -10,6 +10,8 @@ if __name__ == "__main__":
 
    vgg_model = VGGModel()
    cnn_model = SimpleCNN()
+
+   vgg_model.build(train_set = train_set, save_path = vgg_path)
    vgg_model.load(vgg_path)
    cnn_model.load(cnn_path)
 

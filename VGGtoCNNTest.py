@@ -14,7 +14,7 @@ if __name__ == "__main__":
    vgg_model = VGGModel()
    cnn_model = SimpleCNN()
 
-   # cnn_model.build(batch_size= 128, epochs = 5, lr = 0.001, weight_decay = 0.001, file_path = cnn_path)
+   # cnn_model.build(batch_size= 128, epochs = 5, lr = 0.001, weight_decay = 0.001, save_path = cnn_path)
    # cnn_model.save(file_path = cnn_path)
 
 
