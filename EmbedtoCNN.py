@@ -1,9 +1,5 @@
-import vgg
-import simplecnn
-import perturbations
-
 from perturbations import perturb_dataset
-from vgg import load_vgg_means, forward, compute_accuracy_vgg
+from vgg import load_vgg_means
 from simplecnn import load_simple_cnn, test_set, classes, compute_accuracy_cnn
 
 

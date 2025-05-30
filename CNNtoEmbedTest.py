@@ -1,10 +1,6 @@
-import vgg
-import simplecnn
-import perturbations
-
 from perturbations import perturb_dataset
-from vgg import load_vgg_means, forward, compute_accuracy_vgg
-from simplecnn import load_simple_cnn, test_set, classes
+from vgg import load_vgg_means, compute_accuracy_vgg
+from simplecnn import load_simple_cnn, test_set
 
 
 if __name__ == "__main__":
