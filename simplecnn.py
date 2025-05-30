@@ -1,11 +1,6 @@
 import torch
-import numpy as np
-import matplotlib.pyplot as plt
-from torchvision import datasets, transforms
-from torch.utils.data import random_split
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 import torch.optim as optim
 import os
 
@@ -57,7 +52,7 @@ class SimpleCNN(nn.Module):
     
      # Model Training
 
-    def build(self, batch_size, epochs, lr, weight_decay):
+    def build(self, batch_size, epochs, lr, weight_decay, file_path):
         max_validation_accuracy = 0
         val_accuracy = 0
 
@@ -81,7 +76,7 @@ class SimpleCNN(nn.Module):
 
             if(val_accuracy > max_validation_accuracy): 
                 max_validation_accuracy = val_accuracy
-                self.save()
+                self.save(file_path)
 
             print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
 
@@ -122,8 +117,7 @@ class SimpleCNN(nn.Module):
         torch.save(self.state_dict(), file_path)
 
     def load(self, file_path): 
-        model = SimpleCNN()
-        self = model.load_state_dict(torch.load(file_path))
+        self.load_state_dict(torch.load(file_path))
 
 
 

@@ -1,9 +1,5 @@
-import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from torch.utils.data import TensorDataset
-from torch.utils.data import DataLoader
-from . import test_set
 
 from perturbations import * 
 from vgg import *
@@ -15,7 +11,7 @@ if __name__ == "__main__":
     celebrity = classes[label]
 
     model = SimpleCNN()
-    model.load_weights()
+    model.load(file_path = './models/simplecnn.pth')
 
 
     save_img(image, path = FIGURE_PATH + 'Original Image.png')
@@ -38,7 +34,7 @@ if __name__ == "__main__":
 
     # Evaluate model accuracy on perturbed dataset
     print("Creating perturbed dataset with universal perturbation...")
-    perturbed_universal_dataset = perturb_dataset(model, test_set, epsilon, attack='universal', alpha=alpha, iters=iters, is_embed = False)
+    perturbed_universal_dataset = perturb_dataset(model, test_set, epsilon, attack='universal', alpha=alpha, iters=iters)
 
     print("Computing accuracy on universally perturbed dataset...")
     acc = model.compute_accuracy( perturbed_universal_dataset)

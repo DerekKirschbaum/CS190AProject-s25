@@ -4,7 +4,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from facenet_pytorch import MTCNN, InceptionResnetV1
-import matplotlib.pyplot as plt
 from PIL import Image
 from torchvision import transforms
 from typing import Dict
@@ -85,6 +84,7 @@ class VGGModel():
         self.class_means = np.load(file_path, allow_pickle=True).item()
 
 
+
     #Helper Methods
 
     def load_face_tensor(self,path):
@@ -104,15 +104,9 @@ class VGGModel():
             emb = self.model(face_tensor.unsqueeze(0).to(DEVICE))
             emb = F.normalize(emb, p=2, dim=1)
         return emb.cpu().numpy()[0]
+     
 
-    
-
-    def test_model(self,model_name: str,
-                data_dir: str,
-                celebrities: list,
-                class_means: dict,
-                train_per_celeb: int = TRAIN_K,
-                test_per_celeb: int = TEST_K):
+    def test_model(self, data_dir: str, celebrities: list, class_means: dict, train_per_celeb: int = TRAIN_K, test_per_celeb: int = TEST_K):
         total = 0
         correct = 0
         correct_per_celeb = {c: 0 for c in celebrities}
@@ -135,4 +129,6 @@ class VGGModel():
         for celeb in celebrities:
             acc = correct_per_celeb[celeb] / test_per_celeb * 100
             print(f"{celeb:15s} accuracy: {acc:.2f}%")
+
+
 
