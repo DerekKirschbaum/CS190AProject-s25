@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+FIGURE_PATH = './Figures/'
+
 def save_img(img: torch.tensor, path: str):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img = img / 2 + 0.5

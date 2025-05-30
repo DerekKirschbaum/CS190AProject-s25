@@ -1,9 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Trash.oldperturbations import * 
-from vgg import *
-from simplecnn import *
+from perturbations import Adversary 
+from vgg import VGG
+from simplecnn import SimpleCNN
+from datasets import test_set, classes
+from utils import save_img, FIGURE_PATH
+
 
 if __name__ == "__main__":
     image = test_set[0][0]
@@ -11,8 +14,7 @@ if __name__ == "__main__":
     celebrity = classes[label]
 
     model = SimpleCNN()
-    model.load(file_path = './models/simplecnn.pth')
-
+    model.load(file_path = './models/simplecnn.npy')
 
     save_img(image, path = FIGURE_PATH + 'Original Image.png')
     
@@ -25,16 +27,19 @@ if __name__ == "__main__":
     iters = 10
 
     print("Computing universal perturbation...")
-    v = generate_universal_perturbation(model, test_set, epsilon=epsilon, alpha=alpha, iters=iters)
+    cnn_adv = Adversary(model)
+
+    perturbed_universal_dataset = cnn_adv.perturb_dataset(test_set, eps = epsilon, attack = 'universal')
+
+    v = cnn_adv.make_universal(test_set, epsilon)
 
     # Apply universal perturbation to one image
-    universal_image = perturb_image_universal(image, v, epsilon)
+    universal_image = cnn_adv.universal(image, v, epsilon)
 
     save_img(universal_image, path=FIGURE_PATH + 'Universal Perturbed Image.png')
 
     # Evaluate model accuracy on perturbed dataset
     print("Creating perturbed dataset with universal perturbation...")
-    perturbed_universal_dataset = perturb_dataset(model, test_set, epsilon, attack='universal', alpha=alpha, iters=iters)
 
     print("Computing accuracy on universally perturbed dataset...")
     acc = model.compute_accuracy( perturbed_universal_dataset)

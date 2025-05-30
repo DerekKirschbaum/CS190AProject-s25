@@ -1,5 +1,4 @@
 from torch.utils.data import TensorDataset
-from typing import List
 import torch
 from datasets import classes
 
@@ -8,6 +7,7 @@ class Adversary:
         self.model = model
         self.alpha = alpha
         self.pgd_iters = pgd_iters
+        self.v = torch.Tensor(42)
 
     def clamp_eps(self, orig, perturbed, eps):
         clipped = torch.max(torch.min(perturbed, orig + eps), orig - eps)
@@ -29,8 +29,8 @@ class Adversary:
             x = self.clamp_eps(img, x, eps)
         return x
 
-    def universal(self, img, v, eps):
-        return self.clamp_eps(img, img + v, eps)
+    def universal(self, img, lbl, eps):
+        return self.clamp_eps(img, img + self.v, eps)
 
     def make_universal(self, dataset, eps, alpha = None, iters = None):
         alpha = alpha or self.alpha
@@ -52,13 +52,14 @@ class Adversary:
                     v = v + (alpha * gradient.sign())
                     v = torch.max(torch.min(v, eps * torch.ones_like(v)), - eps * torch.ones_like(v))
 
+        self.v = v.detach()
         return v.detach()
 
     def perturb_dataset(self,  dataset, eps, attack):
         methods = {
             "fgsm": self.fgsm,
             "pgd":  self.pgd,
-            "universal": lambda img, lbl: self.universal(img, v, eps)
+            "universal": self.universal
         }
         if attack == "universal":
             v = self.make_universal(dataset, eps)
