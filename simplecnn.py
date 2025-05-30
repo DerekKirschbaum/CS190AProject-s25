@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import os
 
-from data import classes, HEIGHT, LENGTH, VAL_SET
+from data import CLASSES, HEIGHT, LENGTH, VAL_SET
 
 #Model Definition
 
@@ -22,7 +22,7 @@ class SimpleCNN(nn.Module):
         self.fc1 = nn.Linear(flat_feats, 120)
         self.fc2 = nn.Linear(120,        84)
         self.fc3 = nn.Linear(84,         20)
-        self.fc4 = nn.Linear(20,  len(classes))
+        self.fc4 = nn.Linear(20,  len(CLASSES))
 
         self.dropout = nn.Dropout(p = 0)
         self.criterion = nn.CrossEntropyLoss()
@@ -82,7 +82,7 @@ class SimpleCNN(nn.Module):
         
         image = image.clone().unsqueeze(0).requires_grad_(True)
         
-        idx = classes.index(celebrity)
+        idx = CLASSES.index(celebrity)
         label = torch.tensor([idx], dtype=torch.long)
 
         output = self.forward(image)  
