@@ -6,11 +6,6 @@ import os
 from torch.utils.data import TensorDataset
 from simplecnn import classes
 
-from vgg import *
-import simplecnn
-
-FIGURE_PATH = './figures/'
-
 
 # Displaying an Image
 

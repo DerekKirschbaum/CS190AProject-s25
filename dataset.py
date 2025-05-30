@@ -3,7 +3,6 @@ import numpy as np
 from torchvision import datasets, transforms
 from torch.utils.data import random_split
 
-
 HEIGHT = 160
 LENGTH = 160 
 DATA_DIR = './Dataset'

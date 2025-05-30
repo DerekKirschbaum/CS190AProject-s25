@@ -3,10 +3,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from facenet_pytorch import MTCNN, InceptionResnetV1
-from PIL import Image
 from torchvision import transforms
 from typing import Dict
-from dataset import *
+from dataset import classes
 
 
 class VGGModel(): 
@@ -26,9 +25,9 @@ class VGGModel():
 
 
     def build(self, train_set, save_path):
-        embeddings_by_class = {name: [] for name in train_set.dataset.classes}
+        embeddings_by_class = {name: [] for name in classes}
         for img_tensor, label in train_set:
-            name = train_set.dataset.classes[label]
+            name = classes[label]
             emb = self.embed(img_tensor)
             embeddings_by_class[name].append(emb)
         self.class_means = {}
@@ -81,6 +80,7 @@ class VGGModel():
     def load(self, file_path):
         self.class_means = np.load(file_path, allow_pickle=True).item()
 
+    
     #Helper Methods
 
     def embed(self, face_tensor: torch.Tensor) -> np.ndarray:

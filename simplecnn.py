@@ -4,24 +4,20 @@ import torch.nn.functional as F
 import torch.optim as optim
 import os
 
-from dataset import*
+from dataset import classes, HEIGHT, LENGTH, val_set
 
 #Model Definition
 
 class SimpleCNN(nn.Module):
     def __init__(self):
         super().__init__()
-
         self.conv1 = nn.Conv2d(in_channels = 3, out_channels = 6, kernel_size = 3, padding = 1, stride = 1)
-
         self.pool = nn.MaxPool2d(kernel_size = 2, stride = 2)
-
         self.conv2 = nn.Conv2d(in_channels = 6, out_channels = 16, kernel_size = 3, padding = 1, stride = 1)
 
         h_out = HEIGHT // 2 // 2 
         l_out = LENGTH // 2 // 2
         flat_feats = 16 * h_out * l_out
-
 
         self.fc1 = nn.Linear(flat_feats, 120)
         self.fc2 = nn.Linear(120,        84)
@@ -29,14 +25,11 @@ class SimpleCNN(nn.Module):
         self.fc4 = nn.Linear(20,  len(classes))
 
         self.dropout = nn.Dropout(p = 0)
-
         self.criterion = nn.CrossEntropyLoss()
-
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-
 
         x = torch.flatten(x, 1) # flatten all dimensions except batch
 
