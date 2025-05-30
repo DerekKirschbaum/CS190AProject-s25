@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     save_img(image, path = FIGURE_PATH + 'Original Image.png')
     
-    gradient = compute_gradient(model, image, celebrity)
+    gradient = model.compute_gradient(image, celebrity)
 
     epsilon = 0.14
 

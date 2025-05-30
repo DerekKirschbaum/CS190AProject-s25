@@ -1,25 +1,28 @@
 from perturbations import perturb_dataset
-from vgg import load_vgg_means
+from vgg import *
 
 from simplecnn import *
+
 from dataset import *
 
 
 if __name__ == "__main__":
 
-   vgg_model = load_vgg_means()
+   vgg_model = VGGModel()
    cnn_model = SimpleCNN()
    cnn_model.load()
+   vgg_model.load()
 
-   accuracy = model.compute_accuracy(test_set)
+
+   accuracy = cnn_model.compute_accuracy(test_set)
 
    print("baseline accuracy: ", accuracy)
    
    epsilon = 0.5
 
-   perturbed_test_set = perturb_dataset(vgg_model, test_set, epsilon, attack = 'fgsm', is_embed = True)
+   perturbed_test_set = perturb_dataset(vgg_model, test_set, epsilon, attack = 'fgsm')
 
-   perturbed_accuracy = model.compute_accuracy(perturbed_test_set)
+   perturbed_accuracy = cnn_model.compute_accuracy(perturbed_test_set)
 
    print("perturbed transfer accuracy: ", perturbed_accuracy)
    

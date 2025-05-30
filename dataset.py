@@ -1,5 +1,20 @@
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+from torchvision import datasets, transforms
+from torch.utils.data import random_split
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
+import torch.optim as optim
+import os
 
-from . import torch, np, transforms, datasets, HEIGHT, LENGTH, DATA_DIR, random_split
+
+HEIGHT = 160
+LENGTH = 160 
+DATA_DIR = './Dataset'
+
+
 # Random Seed for Reproducibility
 torch.manual_seed(42)
 np.random.seed(42)
