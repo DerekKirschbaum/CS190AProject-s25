@@ -44,7 +44,7 @@ class VGG():
         cm_torch = torch.stack([torch.tensor(self.class_means[c], dtype=torch.float32)
                                 for c in CLASSES], dim=1)
         # 2) prepare input for gradient
-        x = image.unsqueeze(0).clone().detach().requires_grad_(True) (1,3,160,160)
+        x = image.unsqueeze(0).clone().detach().requires_grad_(True) #(1,3,160,160)
 
         # 3) forward → embedding → normalize → compute 5 “logits”
         emb = self.model(x)                                          # (1,512)

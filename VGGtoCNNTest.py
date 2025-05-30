@@ -20,7 +20,7 @@ if __name__ == "__main__":
    
    epsilon = 0.07
 
-   vgg_adv = Adversary(cnn_model)
+   vgg_adv = Adversary(vgg_model)
 
    vgg_perturbed_set = vgg_adv.perturb_dataset(TEST_SET, eps = epsilon, attack = 'fgsm')
 
