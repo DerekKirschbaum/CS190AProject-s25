@@ -30,7 +30,7 @@ def perturb_image_fgsm(model, image: torch.Tensor, celebrity: str, epsilon: floa
   elif (is_embed == False):
     gradient = simplecnn.compute_gradient(model, image, celebrity)
   perturbed_image = epsilon * torch.sign(gradient) + image.clone()
-  perturbed_image = perturbed_image.clamp(-1,1)
+  perturbed_image = perturbed_image.clamp(-1.0,1.0)
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
 
 

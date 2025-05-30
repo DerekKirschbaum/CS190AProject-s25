@@ -11,9 +11,9 @@ if __name__ == "__main__":
 
    print("baseline accuracy: ", accuracy)
    
-   epsilon = 0.25
+   epsilon = 0.5
 
-   perturbed_test_set = perturb_dataset(vgg_model, test_set, epsilon, attack = 'fgsm')
+   perturbed_test_set = perturb_dataset(vgg_model, test_set, epsilon, attack = 'fgsm', is_embed = True)
 
    perturbed_accuracy = compute_accuracy_cnn(cnn_model, perturbed_test_set)
 
