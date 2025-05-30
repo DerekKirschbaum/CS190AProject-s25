@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
    print("baseline accuracy: ", accuracy)
    
-   epsilon = 0.25
+   epsilon = 0
 
    cnn_adv = Adversary(cnn_model)
 
@@ -29,12 +29,15 @@ if __name__ == "__main__":
    perturbed_accuracy = vgg_model.compute_accuracy(cnn_perturbed_set)
 
    print("perturbed transfer accuracy: ", perturbed_accuracy)
-   
-    
-
-   
 
 
 
+      
+      
 
-    
+      
+
+
+
+
+      

@@ -7,7 +7,7 @@ class Adversary:
         self.model = model
         self.alpha = alpha
         self.pgd_iters = pgd_iters
-        self.v = torch.Tensor(42)
+        self.v = None
 
     def clamp_eps(self, orig, perturbed, eps):
         clipped = torch.max(torch.min(perturbed, orig + eps), orig - eps)
@@ -21,7 +21,7 @@ class Adversary:
         out = self.step(img, lbl, eps)
         return self.clamp_eps(img, out, eps)
 
-    def pgd(self, img, lbl, eps, iters=None):
+    def pgd(self, img, lbl, eps, iters = None):
         iters = iters or self.pgd_iters
         x = img.clone()
         for _ in range(iters):
@@ -55,19 +55,19 @@ class Adversary:
         self.v = v.detach()
         return v.detach()
 
-    def perturb_dataset(self,  dataset, eps, attack):
+    def perturb_dataset(self, dataset, eps, attack):
         methods = {
             "fgsm": self.fgsm,
             "pgd":  self.pgd,
             "universal": self.universal
         }
         if attack == "universal":
-            v = self.make_universal(dataset, eps)
+            self.v = self.make_universal(dataset, eps)
         imgs, labs = [], []
         for img, lbl in dataset:
             fn = methods[attack]
             imgs.append(fn(img, lbl, eps))
-            lbl = torch.tensor(lbl)
+            lbl = torch.tensor([lbl])
             
             labs.append(lbl)
         
