@@ -20,6 +20,7 @@ mtcnn = MTCNN(image_size=160, margin=0, device=DEVICE)
 model = InceptionResnetV1(pretrained='vggface2').eval().to(DEVICE)
 to_tensor = transforms.ToTensor()
 
+
 def load_face_tensor(path):
     """
     Returns a torch tensor (3×160×160) in [-1,1].

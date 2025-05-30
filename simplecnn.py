@@ -86,6 +86,23 @@ class SimpleCNN(nn.Module):
         x = self.fc4(x)
 
         return x
+    
+    def compute_gradient(self, image: torch.Tensor, celebrity: str):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
+        self.eval()
+        
+        image = image.clone().unsqueeze(0).requires_grad_(True)
+        
+        idx = classes.index(celebrity)
+        label = torch.tensor([idx], dtype=torch.long)
+
+        output = self.forward(image)  
+        loss   = CRITERION(output, label)
+        loss.backward()
+        
+        grad = image.grad.detach().squeeze(0)  # [3,160,160]
+        grad = grad.clamp(-1,1)
+        return grad
+
 # Computing Accuracy
 
 def compute_accuracy_cnn(model, dataset):
@@ -146,22 +163,6 @@ def load_simple_cnn():
     model = SimpleCNN()
     model.load_state_dict(torch.load(MODEL_PATH))
     return model
-
-def compute_gradient(model, image: torch.Tensor, celebrity: str):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
-    model.eval()
-    
-    image = image.clone().unsqueeze(0).requires_grad_(True)
-    
-    idx = classes.index(celebrity)
-    label = torch.tensor([idx], dtype=torch.long)
-
-    output = model(image)  
-    loss   = CRITERION(output, label)
-    loss.backward()
-    
-    grad = image.grad.detach().squeeze(0)  # [3,160,160]
-    grad = grad.clamp(-1,1)
-    return grad
 
 
 if __name__ == "__main__":

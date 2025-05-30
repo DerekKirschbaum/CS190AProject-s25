@@ -23,14 +23,19 @@ def save_img(img: torch.tensor, path: str):
     plt.savefig(path, dpi = 100, bbox_inches = "tight", pad_inches = 0)
 
 
+def epsilon_clamp(image, perturbed_image, epsilon): 
+    perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
+    perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
+    return perturbed_image
+
 
 def perturb_image_fgsm(model, image: torch.Tensor, celebrity: str, epsilon: float, is_embed: bool = False): # imagetensor [3,160,160] , celebrity = 'Brad Pitt, Angelina Jolie, ...'
   if(is_embed == True): 
     gradient =  vgg.compute_gradient(model, image, celebrity)
   elif (is_embed == False):
-    gradient = simplecnn.compute_gradient(model, image, celebrity)
+    gradient = model.compute_gradient(image, celebrity)
   perturbed_image = epsilon * torch.sign(gradient) + image.clone()
-  perturbed_image = perturbed_image.clamp(-1.0,1.0)
+  perturbed_image = epsilon_clamp(image, perturbed_image, epsilon)
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
 
 
@@ -42,14 +47,12 @@ def perturb_image_pgd(model, image: torch.Tensor, celebrity: str, epsilon: float
     elif (is_embed == False):
       gradient = simplecnn.compute_gradient(model, perturbed_image, celebrity)
     perturbed_image += alpha * gradient.sign()
-    perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
-    perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
+    perturbed_image = epsilon_clamp(image, perturbed_image, epsilon)
   return perturbed_image.detach() #returns a tensor of size [3, 160, 160]
 
 def perturb_image_universal(image, v, epsilon): 
   perturbed_image = image + v
-  perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
-  perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)
+  perturbed_image = epsilon_clamp(image, perturbed_image, epsilon)
   return perturbed_image
 
 
@@ -59,8 +62,7 @@ def generate_universal_perturbation(model, dataset: TensorDataset, epsilon: floa
         for image, label in dataset:
           image = image.to(torch.float32)
           perturbed_image = image + v
-          perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
-          perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)
+          perturbed_image = epsilon_clamp(image, perturbed_image, epsilon)
 
           #Run image through the model
           celebrity = classes[label]
