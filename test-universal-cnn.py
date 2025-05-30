@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
-
+from . import test_set
 
 from perturbations import * 
 from vgg import *
@@ -14,7 +14,9 @@ if __name__ == "__main__":
     label = test_set[0][1]
     celebrity = classes[label]
 
-    cnn_model = load_simple_cnn()
+    model = SimpleCNN()
+    model.load()
+
 
     save_img(image, path = FIGURE_PATH + 'Original Image.png')
     
@@ -27,7 +29,7 @@ if __name__ == "__main__":
     iters = 10
 
     print("Computing universal perturbation...")
-    v = generate_universal_perturbation(cnn_model, test_set, epsilon=epsilon, alpha=alpha, iters=iters)
+    v = generate_universal_perturbation(model, test_set, epsilon=epsilon, alpha=alpha, iters=iters)
 
     # Apply universal perturbation to one image
     universal_image = perturb_image_universal(image, v, epsilon)
@@ -36,10 +38,10 @@ if __name__ == "__main__":
 
     # Evaluate model accuracy on perturbed dataset
     print("Creating perturbed dataset with universal perturbation...")
-    perturbed_universal_dataset = perturb_dataset(cnn_model, test_set, epsilon, attack='universal', alpha=alpha, iters=iters, is_embed = False)
+    perturbed_universal_dataset = perturb_dataset(model, test_set, epsilon, attack='universal', alpha=alpha, iters=iters, is_embed = False)
 
     print("Computing accuracy on universally perturbed dataset...")
-    acc = compute_accuracy_cnn(cnn_model, perturbed_universal_dataset)
+    acc = model.compute_accuracy( perturbed_universal_dataset)
     print(f"Accuracy on universally perturbed test set: {acc:.4f}")
 
 # === Plot original image, perturbation, and perturbed image ===

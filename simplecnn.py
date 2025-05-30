@@ -1,51 +1,12 @@
-# Imports
-import torch
-import numpy as np
-import matplotlib.pyplot as plt
-from torchvision import datasets, transforms
-from torch.utils.data import random_split
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-import torch.optim as optim
-import os
+from . import  torch, nn,F,optim, os, HEIGHT, LENGTH, train_set, val_set, classes
 
 # Data Preparation
-
-#Constants
-HEIGHT = 160
-LENGTH = 160
 CRITERION = nn.CrossEntropyLoss() #Cross Entropy (MLE assuming Categorical Distribution)
-DATA_DIR = './Dataset'
+
 MODEL_PATH = './models/simplecnn.pth'
 
 
-# Random Seed for Reproducibility
-torch.manual_seed(42)
-np.random.seed(42)
-
-
-# Formatting the Dataset
-
-transform = transforms.Compose([
-    transforms.Resize((HEIGHT, LENGTH)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean = (0.5,0.5,0.5), std = (0.5,0.5,0.5)) # normalizes from [0,1] --> [-1,1]
-])
-
-dataset = datasets.ImageFolder(root = DATA_DIR, transform = transform)
-classes = dataset.classes
-
-# Train/Validation/Test Split
-total_size = len(dataset)  # 70/15/15 Trin/Validation/Test split
-train_size = int(0.7 * total_size)
-val_size = int(0.15 * total_size)
-test_size = total_size - train_size - val_size
-
-train_set, val_set, test_set = random_split(dataset, [train_size, val_size, test_size])
-
 #Model Definition
-
 
 class SimpleCNN(nn.Module):
     def __init__(self):
@@ -103,70 +64,67 @@ class SimpleCNN(nn.Module):
         grad = grad.clamp(-1,1)
         return grad
 
-# Computing Accuracy
-
-def compute_accuracy_cnn(model, dataset):
-    correct = 0
-    total = 0
-
-    model.eval()
-    for image, label in dataset:
-        image = image.unsqueeze(dim = 0)
-        outputs = model(image)
-        _, predicted = torch.max(outputs, 1)
-        if(label == predicted): 
-            correct += 1
-        total += 1
-    accuracy = correct / total * 100
-    return accuracy
+    def compute_accuracy(self, dataset): #Computing Accuracy
+        correct = 0
+        total = 0
+        self.eval()
+        for image, label in dataset:
+            image = image.unsqueeze(dim = 0)
+            outputs = self.forward(image)
+            _, predicted = torch.max(outputs, 1)
+            if(label == predicted): 
+                correct += 1
+            total += 1
+        accuracy = correct / total * 100
+        return accuracy
 
 
+    # Model Training
 
-# Model Training
+    def train_params(self, batch_size: int, epochs: int, lr: float, weight_decay: float):
+        max_validation_accuracy = 0
+        val_accuracy = 0
 
-def train_model(batch_size: int, epochs: int, lr: float, weight_decay: float):
-    max_validation_accuracy = 0
-    val_accuracy = 0
+        optimizer = optim.Adam(model.parameters(), lr = lr, weight_decay = weight_decay) 
+        
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size = batch_size, shuffle=True)
 
-    model = SimpleCNN()
-    optimizer = optim.Adam(model.parameters(), lr = lr, weight_decay = weight_decay) 
-    
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size = batch_size, shuffle=True)
+        for epoch in range(1, epochs + 1):
+            for images, labels in train_loader:
 
-    for epoch in range(1, epochs + 1):
-      for images, labels in train_loader:
+                optimizer.zero_grad()
 
-          optimizer.zero_grad()
+                outputs = self.forward(images)
+                loss = CRITERION(outputs, labels)
+                loss.backward()
+                optimizer.step()
+                print("Loss:", round(loss.item(), 3))
 
-          outputs = model.forward(images)
-          loss = CRITERION(outputs, labels)
-          loss.backward()
-          optimizer.step()
-          print("Loss:", round(loss.item(), 3))
+            val_accuracy = self.compute_accuracy(val_set)
+            train_accuracy = self.compute_accuracy(train_set)
 
-      val_accuracy = compute_accuracy_cnn(model, val_set)
-      train_accuracy = compute_accuracy_cnn(model, train_set)
+            if(val_accuracy > max_validation_accuracy): 
+                max_validation_accuracy = val_accuracy
+                model.save()
 
-      if(val_accuracy > max_validation_accuracy): 
-          max_validation_accuracy = val_accuracy
-          save_model(model)
+            print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
 
-      print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
+        return model
 
-    return model
+    def save(self):
+        os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+        torch.save(self.state_dict(), MODEL_PATH)
 
-def save_model(model):
-    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-    torch.save(model.state_dict(), MODEL_PATH)
-
-def load_simple_cnn(): 
-    model = SimpleCNN()
-    model.load_state_dict(torch.load(MODEL_PATH))
-    return model
+    def load(self): 
+        model = SimpleCNN()
+        self = model.load_state_dict(torch.load(MODEL_PATH))
 
 
 if __name__ == "__main__":
-    model = train_model(batch_size = 128, epochs = 10, lr = 0.001, weight_decay = 0.001)
+    model = SimpleCNN()
+    model.train_params(batch_size = 128, epochs = 10, lr = 0.001, weight_decay = 0.001)
+    model.save()
+    
 
     
     
