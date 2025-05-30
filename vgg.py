@@ -82,7 +82,6 @@ class VGG():
     def load(self, file_path):
         self.class_means = np.load(file_path, allow_pickle=True).item()
 
-
     #Helper Methods
 
     def embed(self, face_tensor: torch.Tensor) -> np.ndarray:

@@ -1,9 +1,7 @@
 from perturbations import perturb_dataset
-from vgg import *
-
-from simplecnn import *
-
-from datasets import *
+from vgg import VGG
+from simplecnn import SimpleCNN
+from datasets import test_set
 
 vgg_path = './models/vgg.npy'
 cnn_path = './models/simplecnn.pth'
@@ -11,7 +9,7 @@ cnn_path = './models/simplecnn.pth'
 
 if __name__ == "__main__":
 
-   vgg_model = VGGModel()
+   vgg_model = VGG()
    cnn_model = SimpleCNN()
 
    # cnn_model.build(batch_size= 128, epochs = 5, lr = 0.001, weight_decay = 0.001, save_path = cnn_path)

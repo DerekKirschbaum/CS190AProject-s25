@@ -4,9 +4,6 @@ from torch.utils.data import TensorDataset
 from simplecnn import classes
 
 
-
-
-
 def epsilon_clamp(image, perturbed_image, epsilon): 
     perturbed_image = torch.max(torch.min(perturbed_image, image + epsilon), image - epsilon)  # Project to ε-ball
     perturbed_image = torch.clamp(perturbed_image, -1.0, 1.0)  # Keep within valid image range
@@ -62,7 +59,6 @@ def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, 
   if(attack == 'universal'): 
     v = generate_universal_perturbation(model, dataset, epsilon, alpha, iters) #first generate the universal perturbation
   
-
   for image, label in dataset:
     celebrity = classes[label]
     if(attack == 'fgsm'):
@@ -71,6 +67,7 @@ def perturb_dataset(model, dataset: TensorDataset, epsilon: float, attack: str, 
       perturbed_images.append(perturb_image_pgd(model, image, celebrity, epsilon, alpha, iters))
     elif(attack == 'universal'): 
        perturbed_images.append(perturb_image_universal(image, v, epsilon))
+
 
 
     label = torch.tensor(label)
