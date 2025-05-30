@@ -5,10 +5,10 @@ import torch.nn.functional as F
 from facenet_pytorch import MTCNN, InceptionResnetV1
 from torchvision import transforms
 from typing import Dict
-from dataset import classes
+from datasets import classes
 
 
-class VGGModel(): 
+class VGG(): 
     def __init__(self): 
         self.mtcnn = MTCNN(image_size=160, margin=0)
         self.model = InceptionResnetV1(pretrained='vggface2').eval()
@@ -80,7 +80,7 @@ class VGGModel():
     def load(self, file_path):
         self.class_means = np.load(file_path, allow_pickle=True).item()
 
-    
+
     #Helper Methods
 
     def embed(self, face_tensor: torch.Tensor) -> np.ndarray:

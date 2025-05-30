@@ -3,7 +3,7 @@ from vgg import *
 
 from simplecnn import *
 
-from dataset import *
+from datasets import *
 
 vgg_path = './models/vgg.npy'
 cnn_path = './models/simplecnn.pth'

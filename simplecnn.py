@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import os
 
-from dataset import classes, HEIGHT, LENGTH, val_set
+from datasets import classes, HEIGHT, LENGTH, val_set
 
 #Model Definition
 

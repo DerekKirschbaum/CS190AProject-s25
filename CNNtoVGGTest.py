@@ -2,13 +2,15 @@ from perturbations import perturb_dataset
 from vgg import *
 from simplecnn import *
 
+from datasets import train_set, test_set
+
 vgg_path = './models/vgg.npy'
 cnn_path = './models/simplecnn.pth'
 
 
 if __name__ == "__main__":
 
-   vgg_model = VGGModel()
+   vgg_model = VGG()
    cnn_model = SimpleCNN()
 
    vgg_model.build(train_set = train_set, save_path = vgg_path)
