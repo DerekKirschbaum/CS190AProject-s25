@@ -11,12 +11,6 @@ import os
 
 from dataset import*
 
-# Data Preparation
-CRITERION = nn.CrossEntropyLoss() #Cross Entropy (MLE assuming Categorical Distribution)
-
-MODEL_PATH = './models/simplecnn.pth'
-
-
 #Model Definition
 
 class SimpleCNN(nn.Module):
@@ -41,6 +35,8 @@ class SimpleCNN(nn.Module):
 
         self.dropout = nn.Dropout(p = 0)
 
+        self.criterion = nn.CrossEntropyLoss()
+
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -59,7 +55,38 @@ class SimpleCNN(nn.Module):
 
         return x
     
-    def compute_gradient(self, image: torch.Tensor, celebrity: str):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
+     # Model Training
+
+    def build(self, batch_size, epochs, lr, weight_decay):
+        max_validation_accuracy = 0
+        val_accuracy = 0
+
+        optimizer = optim.Adam(self.parameters(), lr = lr, weight_decay = weight_decay) 
+        
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size = batch_size, shuffle=True)
+
+        for epoch in range(1, epochs + 1):
+            for images, labels in train_loader:
+
+                optimizer.zero_grad()
+
+                outputs = self.forward(images)
+                loss = self.criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+                print("Loss:", round(loss.item(), 3))
+
+            val_accuracy = self.compute_accuracy(val_set)
+            train_accuracy = self.compute_accuracy(train_set)
+
+            if(val_accuracy > max_validation_accuracy): 
+                max_validation_accuracy = val_accuracy
+                self.save()
+
+            print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
+
+    
+    def compute_gradient(self, image, celebrity):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
         self.eval()
         
         image = image.clone().unsqueeze(0).requires_grad_(True)
@@ -68,7 +95,7 @@ class SimpleCNN(nn.Module):
         label = torch.tensor([idx], dtype=torch.long)
 
         output = self.forward(image)  
-        loss   = CRITERION(output, label)
+        loss   = self.criterion(output, label)
         loss.backward()
         
         grad = image.grad.detach().squeeze(0)  # [3,160,160]
@@ -88,41 +115,9 @@ class SimpleCNN(nn.Module):
             total += 1
         accuracy = correct / total * 100
         return accuracy
+   
 
-
-    # Model Training
-
-    def train_params(self, batch_size: int, epochs: int, lr: float, weight_decay: float):
-        max_validation_accuracy = 0
-        val_accuracy = 0
-
-        optimizer = optim.Adam(model.parameters(), lr = lr, weight_decay = weight_decay) 
-        
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size = batch_size, shuffle=True)
-
-        for epoch in range(1, epochs + 1):
-            for images, labels in train_loader:
-
-                optimizer.zero_grad()
-
-                outputs = self.forward(images)
-                loss = CRITERION(outputs, labels)
-                loss.backward()
-                optimizer.step()
-                print("Loss:", round(loss.item(), 3))
-
-            val_accuracy = self.compute_accuracy(val_set)
-            train_accuracy = self.compute_accuracy(train_set)
-
-            if(val_accuracy > max_validation_accuracy): 
-                max_validation_accuracy = val_accuracy
-                model.save()
-
-            print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
-
-        return model
-
-    def save_model(self, file_path):
+    def save(self, file_path):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         torch.save(self.state_dict(), file_path)
 
@@ -131,11 +126,7 @@ class SimpleCNN(nn.Module):
         self = model.load_state_dict(torch.load(file_path))
 
 
-if __name__ == "__main__":
-    model = SimpleCNN()
-    model.train_params(batch_size = 128, epochs = 10, lr = 0.001, weight_decay = 0.001)
-    model.save()
-    
+
 
     
     

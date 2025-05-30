@@ -18,11 +18,74 @@ DEVICE     = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class VGGModel(): 
     def __init__(self): 
-        # ── SET UP MTCNN & FaceNet ───────────────────────────────────────────────────────
         self.mtcnn = MTCNN(image_size=160, margin=0, device=DEVICE)
         self.model = InceptionResnetV1(pretrained='vggface2').eval().to(DEVICE)
         self.to_tensor = transforms.ToTensor()
         self.class_means: Dict[str, np.ndarray] = {}
+    
+    def forward(self, x): 
+        class_means = self.class_means
+        emb = self.embed_tensor(x)
+        emb = emb / np.linalg.norm(emb)
+        sims = {c: np.dot(emb, class_means[c]) for c in CELEBS}
+        pred = max(sims, key=sims.get)
+        return pred
+
+
+# ── ORIGINAL TRAIN / TEST ───────────────────────────────────────────────────────
+    def build(self, data_dir: str, celebrities: list, train_per_celeb: int = TRAIN_K):
+        self.class_means = {}
+        for celeb in celebrities:
+            img_paths = sorted(glob.glob(os.path.join(data_dir, celeb, '*.*')))
+            train_paths = img_paths[:train_per_celeb]
+            embs = [self.embed_tensor(self.load_face_tensor(p)) for p in train_paths]
+            mean_emb = np.mean(embs, axis=0)
+            self.class_means[celeb] = mean_emb / np.linalg.norm(mean_emb)
+    
+    def compute_gradient(self, image, celebrity):  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
+        # 1) build a stacked tensor of all class‐means: shape (512,5)
+        cm_torch = torch.stack([torch.tensor(self.class_means[c], device=DEVICE, dtype=torch.float32)
+                                for c in CELEBS], dim=1)
+        # 2) prepare input for gradient
+        x = image.unsqueeze(0).clone().detach().requires_grad_(True).to(DEVICE)  # (1,3,160,160)
+
+        # 3) forward → embedding → normalize → compute 5 “logits”
+        emb = self.model(x)                                          # (1,512)
+        embn = F.normalize(emb, p=2, dim=1)                     # (1,512)
+        logits = embn @ cm_torch                                # (1,5)
+
+        y_true = CELEBS.index(celebrity)
+        label = torch.tensor([y_true], dtype=torch.long)
+
+        # 5) cross-entropy loss (we want to *increase* this)
+        loss = F.cross_entropy(logits, label)
+        loss.backward()
+
+        grad = x.grad   
+        grad = grad.squeeze(dim = 0)                        # (3,160,160)
+
+        return grad
+    def compute_accuracy(self, dataset): 
+        correct = 0
+        total = 0
+        for image, label in dataset: 
+            celebrity = CELEBS[label]
+            pred = self.forward(image)
+            if(celebrity == pred): 
+                correct += 1
+            total += 1
+        return (correct / total) * 100
+    
+
+    def save(self, file_path):
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        np.save(file_path, self.class_means)
+
+    def load(self, file_path):
+        self.class_means = np.load(file_path, allow_pickle=True).item()
+
+
+    #Helper Methods
 
     def load_face_tensor(self,path):
         """
@@ -42,15 +105,7 @@ class VGGModel():
             emb = F.normalize(emb, p=2, dim=1)
         return emb.cpu().numpy()[0]
 
-    # ── ORIGINAL TRAIN / TEST ───────────────────────────────────────────────────────
-    def train_model(self, data_dir: str, celebrities: list, train_per_celeb: int = TRAIN_K):
-        self.class_means = {}
-        for celeb in celebrities:
-            img_paths = sorted(glob.glob(os.path.join(data_dir, celeb, '*.*')))
-            train_paths = img_paths[:train_per_celeb]
-            embs = [self.embed_tensor(self.load_face_tensor(p)) for p in train_paths]
-            mean_emb = np.mean(embs, axis=0)
-            self.class_means[celeb] = mean_emb / np.linalg.norm(mean_emb)
+    
 
     def test_model(self,model_name: str,
                 data_dir: str,
@@ -81,64 +136,3 @@ class VGGModel():
             acc = correct_per_celeb[celeb] / test_per_celeb * 100
             print(f"{celeb:15s} accuracy: {acc:.2f}%")
 
-    def compute_gradient(self, image, celebrity):  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
-
-        # 1) build a stacked tensor of all class‐means: shape (512,5)
-        cm_torch = torch.stack([torch.tensor(self.means[c], device=DEVICE, dtype=torch.float32)
-                                for c in CELEBS], dim=1)
-        # 2) prepare input for gradient
-        x = image.unsqueeze(0).clone().detach().requires_grad_(True).to(DEVICE)  # (1,3,160,160)
-
-        # 3) forward → embedding → normalize → compute 5 “logits”
-        emb = self.model(x)                                          # (1,512)
-        embn = F.normalize(emb, p=2, dim=1)                     # (1,512)
-        logits = embn @ cm_torch                                # (1,5)
-
-        y_true = CELEBS.index(celebrity)
-        label = torch.tensor([y_true], dtype=torch.long)
-
-        # 5) cross-entropy loss (we want to *increase* this)
-        loss = F.cross_entropy(logits, label)
-        loss.backward()
-
-
-        grad = x.grad   
-        grad = grad.squeeze(dim = 0)                        # (3,160,160)
-        
-
-        return grad
-
-    def forward(self, image): 
-        class_means = self.means
-        emb = self.embed_tensor(image)
-        emb = emb / np.linalg.norm(emb)
-        sims = {c: np.dot(emb, class_means[c]) for c in CELEBS}
-        pred = max(sims, key=sims.get)
-        return pred
-
-    def save_means(self, file_path: str) -> None:
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        np.save(file_path, self.class_means)
-
-    def load_means(self, file_path: str) -> None:
-        self.class_means = np.load(file_path, allow_pickle=True).item()
-
-
-    def compute_accuracy(self, test_set): 
-        correct = 0
-        total = 0
-        for image, label in test_set: 
-            celebrity = CELEBS[label]
-            pred = self.forward(image)
-            if(celebrity == pred): 
-                correct += 1
-            total += 1
-        return (correct / total) * 100
-
-
-# ── MAIN ─────────────────────────────────────────────────────────────────────────
-if __name__ == "__main__":
-    model = VGGModel()
-    # model.train_model(DATA_DIR, CELEBS, train_per_celeb = TRAIN_K)
-    accuracy = model.compute_accuracy(test_set)
-    print(accuracy)

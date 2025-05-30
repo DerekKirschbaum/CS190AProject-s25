@@ -5,13 +5,16 @@ from simplecnn import *
 
 from dataset import *
 
+vgg_path = './models/vgg.npy'
+cnn_path = './models/simplecnn.pth'
+
 
 if __name__ == "__main__":
 
    vgg_model = VGGModel()
    cnn_model = SimpleCNN()
-   cnn_model.load()
-   vgg_model.load()
+   cnn_model.load(cnn_path)
+   vgg_model.load(vgg_path)
 
 
    accuracy = cnn_model.compute_accuracy(test_set)

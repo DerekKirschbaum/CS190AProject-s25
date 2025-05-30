@@ -2,13 +2,16 @@ from perturbations import perturb_dataset
 from vgg import *
 from simplecnn import *
 
+vgg_path = './models/vgg.npy'
+cnn_path = './models/simplecnn.pth'
+
 
 if __name__ == "__main__":
 
    vgg_model = VGGModel()
    cnn_model = SimpleCNN()
-   vgg_model.load()
-   cnn_model.load()
+   vgg_model.load(vgg_path)
+   cnn_model.load(cnn_path)
 
    accuracy = vgg_model.compute_accuracy(test_set)
 
