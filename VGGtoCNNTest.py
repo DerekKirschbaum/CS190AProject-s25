@@ -1,7 +1,7 @@
 from perturbations import Adversary
 from vgg import VGG
 from simplecnn import SimpleCNN
-from datasets import test_set
+from data import TEST_SET
 
 vgg_path = './models/vgg.npy'
 cnn_path = './models/simplecnn.npy'
@@ -14,7 +14,7 @@ if __name__ == "__main__":
    vgg_model.load(vgg_path)
 
 
-   accuracy = cnn_model.compute_accuracy(test_set)
+   accuracy = cnn_model.compute_accuracy(TEST_SET)
 
    print("baseline accuracy: ", accuracy)
    
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
    vgg_adv = Adversary(cnn_model)
 
-   vgg_perturbed_set = vgg_adv.perturb_dataset(test_set, eps = epsilon, attack = 'fgsm')
+   vgg_perturbed_set = vgg_adv.perturb_dataset(TEST_SET, eps = epsilon, attack = 'fgsm')
 
    perturbed_accuracy = cnn_model.compute_accuracy(vgg_perturbed_set)
 

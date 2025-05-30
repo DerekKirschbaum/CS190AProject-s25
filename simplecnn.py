@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import os
 
-from datasets import classes, HEIGHT, LENGTH, val_set
+from data import classes, HEIGHT, LENGTH, VAL_SET
 
 #Model Definition
 
@@ -45,7 +45,7 @@ class SimpleCNN(nn.Module):
     
      # Model Training
 
-    def build(self, dataset, save_path, batch_size = 128, epochs = 5, lr = 0.001, weight_decay = 0.001, val_set = val_set, is_verbose = False):
+    def build(self, dataset, save_path, batch_size = 128, epochs = 5, lr = 0.001, weight_decay = 0.001, val_set = VAL_SET, is_verbose = False):
         print("Building SimpleCNN...")
         max_validation_accuracy = 0
         val_accuracy = 0

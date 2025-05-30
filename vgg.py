@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from facenet_pytorch import MTCNN, InceptionResnetV1
 from torchvision import transforms
 from typing import Dict
-from datasets import classes
+from data import CLASSES
 
 
 class VGG(): 
@@ -19,16 +19,16 @@ class VGG():
         class_means = self.class_means
         emb = self.embed(x)
         emb = emb / np.linalg.norm(emb)
-        sims = {c: np.dot(emb, class_means[c]) for c in classes}
+        sims = {c: np.dot(emb, class_means[c]) for c in CLASSES}
         pred = max(sims, key=sims.get)
         return pred
 
 
     def build(self, dataset, save_path):
         print("Building VGG...")
-        embeddings_by_class = {name: [] for name in classes}
+        embeddings_by_class = {name: [] for name in CLASSES}
         for img_tensor, label in dataset:
-            name = classes[label]
+            name = CLASSES[label]
             emb = self.embed(img_tensor)
             embeddings_by_class[name].append(emb)
         self.class_means = {}
@@ -42,7 +42,7 @@ class VGG():
     def compute_gradient(self, image, celebrity):  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
         # 1) build a stacked tensor of all class‐means: shape (512,5)
         cm_torch = torch.stack([torch.tensor(self.class_means[c], dtype=torch.float32)
-                                for c in classes], dim=1)
+                                for c in CLASSES], dim=1)
         # 2) prepare input for gradient
         x = image.unsqueeze(0).clone().detach().requires_grad_(True) (1,3,160,160)
 
@@ -51,7 +51,7 @@ class VGG():
         embn = F.normalize(emb, p=2, dim=1)                     # (1,512)
         logits = embn @ cm_torch                                # (1,5)
 
-        y_true = classes.index(celebrity)
+        y_true = CLASSES.index(celebrity)
         label = torch.tensor([y_true], dtype=torch.long)
 
         # 5) cross-entropy loss (we want to *increase* this)
@@ -67,7 +67,7 @@ class VGG():
         correct = 0
         total = 0
         for image, label in dataset: 
-            celebrity = classes[label]
+            celebrity = CLASSES[label]
             pred = self.forward(image)
             if(celebrity == pred): 
                 correct += 1

@@ -1,6 +1,6 @@
 from torch.utils.data import TensorDataset
 import torch
-from datasets import classes
+from data import CLASSES
 
 class Adversary:
     def __init__(self, model, alpha = 0.01, pgd_iters = 10):
@@ -14,7 +14,7 @@ class Adversary:
         return clipped.clamp(-1.0, 1.0)
 
     def step(self, img, lbl, step_size):
-        grad = self.model.compute_gradient(img, classes[lbl])
+        grad = self.model.compute_gradient(img, CLASSES[lbl])
         return img + step_size * grad.sign()
 
     def fgsm(self, img, lbl, eps):
@@ -43,7 +43,7 @@ class Adversary:
                 perturbed_image = self.clamp_eps(image, perturbed_image, eps)
 
                 #Run image through the model
-                celebrity = classes[label]
+                celebrity = CLASSES[label]
                 pred_logits = self.model(perturbed_image.unsqueeze(0))  # batch of 1
                 pred_label = torch.argmax(pred_logits, dim=1)
 

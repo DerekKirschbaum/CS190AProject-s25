@@ -3,7 +3,7 @@
 from vgg import VGG
 from simplecnn import SimpleCNN
 
-from datasets import train_set
+from data import train_set
 
 if __name__ == "__main__":
     vgg_model = VGG()

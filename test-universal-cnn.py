@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 from perturbations import Adversary 
 from vgg import VGG
 from simplecnn import SimpleCNN
-from datasets import test_set, classes
+from data import TEST_SET, CLASSES
 from utils import save_img, FIGURE_PATH
 
 
 if __name__ == "__main__":
-    image = test_set[0][0]
-    label = test_set[0][1]
-    celebrity = classes[label]
+    image = TEST_SET[0][0]
+    label = TEST_SET[0][1]
+    celebrity = CLASSES[label]
 
     model = SimpleCNN()
     model.load(file_path = './models/simplecnn.npy')
@@ -29,9 +29,9 @@ if __name__ == "__main__":
     print("Computing universal perturbation...")
     cnn_adv = Adversary(model)
 
-    perturbed_universal_dataset = cnn_adv.perturb_dataset(test_set, eps = epsilon, attack = 'universal')
+    perturbed_universal_dataset = cnn_adv.perturb_dataset(TEST_SET, eps = epsilon, attack = 'universal')
 
-    v = cnn_adv.make_universal(test_set, epsilon)
+    v = cnn_adv.make_universal(TEST_SET, epsilon)
 
     # Apply universal perturbation to one image
     universal_image = cnn_adv.universal(image, v, epsilon)
