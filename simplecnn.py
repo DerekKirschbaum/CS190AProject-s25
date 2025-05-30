@@ -94,6 +94,7 @@ def compute_accuracy_cnn(model, dataset):
 
     model.eval()
     for image, label in dataset:
+        image = image.unsqueeze(dim = 0)
         outputs = model(image)
         _, predicted = torch.max(outputs, 1)
         if(label == predicted): 
