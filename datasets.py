@@ -7,14 +7,11 @@ HEIGHT = 160
 LENGTH = 160 
 DATA_DIR = './Dataset'
 
-
 # Random Seed for Reproducibility
 torch.manual_seed(42)
 np.random.seed(42)
 
-
 # Formatting the Dataset
-
 transform = transforms.Compose([
     transforms.Resize((HEIGHT, LENGTH)),
     transforms.ToTensor(),

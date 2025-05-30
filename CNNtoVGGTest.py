@@ -1,7 +1,6 @@
 from perturbations import perturb_dataset
-from vgg import *
-from simplecnn import *
-
+from vgg import VGG
+from simplecnn import SimpleCNN
 from datasets import train_set, test_set
 
 vgg_path = './models/vgg.npy'

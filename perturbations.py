@@ -1,21 +1,10 @@
 # Imports
 import torch
-import numpy as np
-import matplotlib.pyplot as plt
-import os
 from torch.utils.data import TensorDataset
 from simplecnn import classes
 
 
-# Displaying an Image
 
-
-def save_img(img: torch.tensor, path: str):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    img = img / 2 + 0.5
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.savefig(path, dpi = 100, bbox_inches = "tight", pad_inches = 0)
 
 
 def epsilon_clamp(image, perturbed_image, epsilon): 

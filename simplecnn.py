@@ -45,13 +45,14 @@ class SimpleCNN(nn.Module):
     
      # Model Training
 
-    def build(self, train_set, save_path, batch_size = 128, epochs = 10, lr = 0.001, weight_decay = 0.001, val_set = val_set):
+    def build(self, dataset, save_path, batch_size = 128, epochs = 5, lr = 0.001, weight_decay = 0.001, val_set = val_set, is_verbose = False):
+        print("Building SimpleCNN...")
         max_validation_accuracy = 0
         val_accuracy = 0
 
         optimizer = optim.Adam(self.parameters(), lr = lr, weight_decay = weight_decay) 
         
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size = batch_size, shuffle=True)
+        train_loader = torch.utils.data.DataLoader(dataset, batch_size = batch_size, shuffle=True)
 
         for epoch in range(1, epochs + 1):
             for images, labels in train_loader:
@@ -62,17 +63,19 @@ class SimpleCNN(nn.Module):
                 loss = self.criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
-                print("Loss:", round(loss.item(), 3))
+                if(is_verbose): 
+                    print("Loss:", round(loss.item(), 3))
 
             val_accuracy = self.compute_accuracy(val_set)
-            train_accuracy = self.compute_accuracy(train_set)
+            train_accuracy = self.compute_accuracy(dataset)
 
             if(val_accuracy > max_validation_accuracy): 
                 max_validation_accuracy = val_accuracy
                 self.save(save_path)
 
-            print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
-
+            if(is_verbose): 
+                print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
+        print("SimpleCNN Build Complete")
     
     def compute_gradient(self, image, celebrity):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
         self.eval()

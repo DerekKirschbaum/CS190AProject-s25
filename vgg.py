@@ -24,9 +24,10 @@ class VGG():
         return pred
 
 
-    def build(self, train_set, save_path):
+    def build(self, dataset, save_path):
+        print("Building VGG...")
         embeddings_by_class = {name: [] for name in classes}
-        for img_tensor, label in train_set:
+        for img_tensor, label in dataset:
             name = classes[label]
             emb = self.embed(img_tensor)
             embeddings_by_class[name].append(emb)
@@ -35,6 +36,7 @@ class VGG():
             mean_emb = np.mean(embs, axis=0)
             self.class_means[name] = mean_emb / np.linalg.norm(mean_emb)
         self.save(save_path)
+        print("VGG Build Complete")
 
     
     def compute_gradient(self, image, celebrity):  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
