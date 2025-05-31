@@ -3,11 +3,11 @@ from Models.simplecnn import SimpleCNN
 from perturbations import Adversary
 from utils import plot_lines
 
-from data import TEST_SET
+from preprocess_data import TEST_SET
 
 if __name__ == "__main__":
     cnn = SimpleCNN()
-    path = "./models/simplecnn.npy"
+    path = "./checkpoints/simplecnn.npy"
     cnn.load(path)
 
     adv = Adversary(cnn)

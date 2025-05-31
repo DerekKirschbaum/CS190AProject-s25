@@ -2,7 +2,7 @@ from perturbations import Adversary
 from Models.vgg import VGG
 from Models.simplecnn import SimpleCNN
 from Models.arcface import ArcFace
-from data import TEST_SET
+from preprocess_data import TEST_SET
 import os
 import numpy as np
 import matplotlib.pyplot as plt
