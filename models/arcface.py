@@ -17,7 +17,7 @@ from preprocess_data import CLASSES
 
 class ArcFace():
     def __init__(self): 
-        self.model = get_model('buffalo_ms1m', download=True)
+        self.model = get_model('buffalo_l', download=True)
         self.model.prepare(ctx_id=-1)
         self.to_tensor = transforms.ToTensor()
         self.class_means: Dict[str, np.ndarray] = {}

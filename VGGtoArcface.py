@@ -1,10 +1,10 @@
 from perturbations import Adversary
-from Models.vgg import VGG
-from Models.arcface import ArcFace
+from models.vgg import VGG
+from models.arcface import ArcFace
 from preprocess_data import TRAIN_SET, TEST_SET, CLASSES
 
-vgg_path = './models/vgg.npy'
-arcface_path = './models/arcface.npy'
+vgg_path = './checkpoints/vgg.npy'
+arcface_path = './checkpoints/arcface.npy'
 
 if __name__ == "__main__":
 
