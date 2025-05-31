@@ -14,7 +14,6 @@ def save_img(img, path):
 
 
 def plot_lines(x, ys, title, xlabel, ylabel, labels = None, **plot_kwargs):#plot keyword args
-    
     # Determine if ys is a single sequence of scalars or already a list of sequences
     # If the first element of ys is not iterable, wrap it into a list.
     if hasattr(ys, "__iter__"):

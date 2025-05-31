@@ -11,7 +11,7 @@ class VGG(EmbeddingModel):
         self.mtcnn = MTCNN(image_size=160, margin=0)
 
     #Helper Methods
-
+    
     def embed(self, face_tensor: torch.Tensor) -> np.ndarray:
         with torch.no_grad():
             emb = self.model(face_tensor.unsqueeze(0))

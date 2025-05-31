@@ -21,7 +21,7 @@ class ArcFace():
         self.model.prepare(ctx_id=-1)
         self.to_tensor = transforms.ToTensor()
         self.class_means: Dict[str, np.ndarray] = {}
-
+        
        
     def build(self, dataset, save_path):
         print("Building ArcFace Embeddings...")
