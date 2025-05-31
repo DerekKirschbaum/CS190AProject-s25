@@ -1,19 +1,18 @@
-#imports
+# imports
 from models.simplecnn import SimpleCNN
 from models.vgg import VGG
 from models.casia import Casia
 from perturbations import Adversary
 from utils import plot_lines
 
-from perturbations import Adversary
-from utils import plot_lines
+from preprocess_data import TEST_SET
 
-
-import matplotlib.pyplot as plt
+figure_path = './figures/'
 
 def evaluate_attack(
     source_model,
-    target_models: dict,
+    target_models: list,
+    model_labels: list,
     dataset,
     epsilons: list,
     attack_method: str,
@@ -24,28 +23,27 @@ def evaluate_attack(
     adv = Adversary(source_model)
 
     # 2. Prepare a place to accumulate accuracies for each target
-    accuracies = {name: [] for name in target_models.keys()}
+    accuracies = {label: [] for label in model_labels}
 
     # 3. For each epsilon, perturb the dataset and evaluate each target model
     for eps in epsilons:
         perturbed_dataset = adv.perturb_dataset(dataset, eps, attack_method)
-        for model_name, model_obj in target_models.items():
+        for model_obj, label in zip(target_models, model_labels):
             acc = model_obj.compute_accuracy(perturbed_dataset)
-            accuracies[model_name].append(acc)
+            accuracies[label].append(acc)
 
-    # 4. Gather lists of accuracies in the same order as target_models.keys()
-    model_names = list(target_models.keys())
-    accuracy_lists = [accuracies[name] for name in model_names]
+    # 4. Gather accuracy lists in the same order as model_labels
+    accuracy_lists = [accuracies[label] for label in model_labels]
 
     # 5. Build plot metadata
     title = f"{attack_method.upper()} Attack: Accuracy vs Epsilon"
     xlabel = "Epsilon"
     ylabel = "Accuracy"
-    labels = model_names
+    labels = model_labels
 
     # 6. Use plot_lines to create and save the figure
-    #    plot_lines will save to save_path + title (without file extension),
-    #    so we'll append ".png" explicitly in save_path if desired.
+    #    plot_lines will save to save_path + title (without extension),
+    #    so append ".png" to save_path+title when saving on disk.
     plot_lines(
         x=epsilons,
         ys=accuracy_lists,
@@ -58,16 +56,11 @@ def evaluate_attack(
     )
 
 
-
-from preprocess_data import TEST_SET
-
-figure_path = './figures/'
-
 if __name__ == "__main__":
+    # Instantiate and load each model
     cnn = SimpleCNN()
     vgg = VGG()
     casia = Casia()
-
 
     cnn_path = "./checkpoints/simplecnn.npy"
     vgg_path = "./checkpoints/vgg.npy"
@@ -77,15 +70,14 @@ if __name__ == "__main__":
     vgg.load(vgg_path)
     casia.load(casia_path)
 
-
-    # 2. Prepare the list of target models and their labels
+    # Prepare the list of target models and their labels
     target_models = [cnn, vgg, casia]
     model_labels  = ["CNN", "VGG", "Casia"]
 
-    # 3. Define the epsilons to test
-    epsilons = [round(i * 0.05, 2) for i in range(1)]  # [0.0, 0.05, 0.10, …, 0.45]
+    # Define the epsilons to test
+    epsilons = [round(i * 0.05, 2) for i in range(4)]  # [0.0, 0.05, 0.10, ..., 0.45]
 
-    # 4. Call evaluate_attack, using `cnn` as the source for crafting perturbations
+    # Call evaluate_attack, using `cnn` as the source for crafting perturbations
     evaluate_attack(
         source_model=cnn,
         target_models=target_models,
@@ -95,4 +87,3 @@ if __name__ == "__main__":
         attack_method="fgsm",
         save_path=figure_path
     )
-
