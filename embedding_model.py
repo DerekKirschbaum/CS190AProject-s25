@@ -7,7 +7,6 @@ import torch
 import torch.nn.functional as F
 
 
-
 class EmbeddingModel(ABC): #ABC = abstract base class
     def __init__(self, model, model_name):
         self.class_means: Dict[str, np.ndarray] = {}  

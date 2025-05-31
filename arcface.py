@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from torchvision import transforms
 
+
 import cv2
 import numpy as np
 from insightface.model_zoo import get_model
@@ -16,11 +17,12 @@ from data import CLASSES
 
 class ArcFace():
     def __init__(self): 
-        self.model = get_model('buffalo_l', download=True) 
+        self.model = get_model('buffalo_ms1m', download=True)
         self.model.prepare(ctx_id=-1)
         self.to_tensor = transforms.ToTensor()
         self.class_means: Dict[str, np.ndarray] = {}
 
+       
     def build(self, dataset, save_path):
         print("Building ArcFace Embeddings...")
         embeddings_by_class = {name: [] for name in CLASSES}
