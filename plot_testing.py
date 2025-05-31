@@ -36,9 +36,9 @@ def evaluate_attack(
     accuracy_lists = [accuracies[label] for label in model_labels]
 
     # 5. Build plot metadata
-    title = f"{attack_method.upper()} Attack: Accuracy vs Epsilon"
+    title = f"{attack_method.upper()} Attack (Source: {source_model.__class__.__name__}): Accuracy vs Epsilon"
     xlabel = "Epsilon"
-    ylabel = "Accuracy"
+    ylabel = "Accuracy %"
     labels = model_labels
 
     # 6. Use plot_lines to create and save the figure
@@ -72,10 +72,10 @@ if __name__ == "__main__":
 
     # Prepare the list of target models and their labels
     target_models = [cnn, vgg, casia]
-    model_labels  = ["CNN", "VGG", "Casia"]
+    model_labels  = ["Simple CNN", "VGG", "Casia"]
 
     # Define the epsilons to test
-    epsilons = [round(i * 0.05, 2) for i in range(4)]  # [0.0, 0.05, 0.10, ..., 0.45]
+    epsilons = [round(i * 0.05, 2) for i in range(10)]  # [0.0, 0.05, 0.10, ..., 0.45]
 
     # Call evaluate_attack, using `cnn` as the source for crafting perturbations
     evaluate_attack(
@@ -84,6 +84,19 @@ if __name__ == "__main__":
         model_labels=model_labels,
         dataset=TEST_SET,
         epsilons=epsilons,
-        attack_method="fgsm",
+        attack_method="universal",
         save_path=figure_path
     )
+
+    evaluate_attack(
+        source_model=cnn,
+        target_models=target_models,
+        model_labels=model_labels,
+        dataset=TEST_SET,
+        epsilons=epsilons,
+        attack_method="noise",
+        save_path=figure_path
+    )
+
+
+
