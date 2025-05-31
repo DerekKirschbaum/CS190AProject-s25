@@ -5,8 +5,6 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from PIL import Image
 from torchvision import transforms
-
-
 import cv2
 import numpy as np
 from insightface.model_zoo import get_model

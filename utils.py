@@ -13,7 +13,7 @@ def save_img(img, path):
     plt.savefig(path, dpi = 100, bbox_inches = "tight", pad_inches = 0)
 
 
-def plot_lines(x, ys, title, xlabel, ylabel, labels = None, **plot_kwargs):#plot keyword args
+def plot_lines(x, ys, title, xlabel, ylabel, save_path, labels = None, **plot_kwargs):#plot keyword args
     # Determine if ys is a single sequence of scalars or already a list of sequences
     # If the first element of ys is not iterable, wrap it into a list.
     if hasattr(ys, "__iter__"):
@@ -43,7 +43,8 @@ def plot_lines(x, ys, title, xlabel, ylabel, labels = None, **plot_kwargs):#plot
         plt.legend()
     
     plt.grid(True)
+    
 
-    plt.show()
+    plt.savefig(save_path + title)
 
 

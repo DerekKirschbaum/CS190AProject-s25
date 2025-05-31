@@ -4,4 +4,4 @@ from models.embedding_model import EmbeddingModel
 
 class Casia(EmbeddingModel): 
     def __init__(self): 
-        super().__init__(model = InceptionResnetV1(pretrained='casia-webface').eval(), model_name = 'VGG')
+        super().__init__(model = InceptionResnetV1(pretrained='casia-webface').eval(), model_name = 'Casia')

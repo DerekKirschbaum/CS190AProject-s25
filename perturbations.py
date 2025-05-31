@@ -10,9 +10,13 @@ class Adversary:
         self.v = None
 
     def clamp_eps(self, orig, perturbed, eps):
-        clipped = torch.max(torch.min(perturbed, orig + eps), orig - eps)
-        return clipped.clamp(-1.0, 1.0)
-
+        upper = orig + eps
+        lower = orig - eps
+        clipped_high = torch.min(perturbed, upper)
+        clipped = torch.max(clipped_high, lower)
+        clipped = clipped.clamp(-1.0, 1.0)
+        return clipped
+    
     def step(self, img, lbl, step_size):
         grad = self.model.compute_gradient(img, CLASSES[lbl])
         return img.clone() + step_size * grad.sign()
@@ -31,6 +35,11 @@ class Adversary:
 
     def universal(self, img, lbl, eps):
         return self.clamp_eps(img, img + self.v, eps)
+    
+    def noise(self, img, lbl, eps): 
+        rand = torch.rand_like(img) * 2.0 - 1.0
+        out = img.clone() + rand
+        return self.clamp_eps(img, out, eps)
 
     def make_universal(self, dataset, eps, alpha = None, iters = None):
         alpha = alpha or self.alpha
@@ -59,7 +68,8 @@ class Adversary:
         methods = {
             "fgsm": self.fgsm,
             "pgd":  self.pgd,
-            "universal": self.universal
+            "universal": self.universal,
+            "noise": self.noise
         }
         if attack == "universal":
             self.v = self.make_universal(dataset, eps)
