@@ -53,7 +53,7 @@ class ArcFace():
         total = 0
         for image, label in dataset: 
             celebrity = CLASSES[label]
-            pred = self.forward(image)
+            pred, _ = self.forward(image)
             if(celebrity == pred): 
                 correct += 1
             total += 1

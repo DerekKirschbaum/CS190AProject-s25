@@ -15,7 +15,7 @@ class Adversary:
 
     def step(self, img, lbl, step_size):
         grad = self.model.compute_gradient(img, CLASSES[lbl])
-        return img + step_size * grad.sign()
+        return img.clone() + step_size * grad.sign()
 
     def fgsm(self, img, lbl, eps):
         out = self.step(img, lbl, eps)
