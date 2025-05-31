@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     adv = Adversary(cnn)
 
-    epsilons = [round(i * 0.05, 2) for i in range(11)]
+    epsilons = [round(i * 0.05, 2) for i in range(3)]
     accuracy = []
 
     for eps in epsilons: 
@@ -21,4 +21,4 @@ if __name__ == "__main__":
     
 
     
-    plot_lines(epsilons, accuracy, "Accuracy vs Epsilon", "Epsilon", "Accuracy")
+    plot_lines(epsilons, accuracy, "FGSM Accuracy vs Epsilon on CNN Model", "Epsilon", "Accuracy",)

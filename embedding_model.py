@@ -5,6 +5,7 @@ from torchvision import transforms
 from typing import Dict
 import torch
 import torch.nn.functional as F
+from facenet_pytorch import MTCNN
 
 
 class EmbeddingModel(ABC): #ABC = abstract base class
@@ -14,6 +15,7 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         self.to_tensor = transforms.ToTensor()
         self.model_name = model_name
         self.classes = None
+        self.mtcnn = MTCNN(image_size=160, margin=0)
 
     def build(self, dataset, save_path: str):
         self.classes = dataset.dataset.classes
@@ -38,9 +40,12 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         pred = max(sims, key=sims.get)
         return pred
  
-    @abstractmethod
-    def embed(self, x):
-        pass
+    def embed(self, face_tensor: torch.Tensor) -> np.ndarray:
+        with torch.no_grad():
+            emb = self.model(face_tensor.unsqueeze(0))
+            emb = F.normalize(emb, p=2, dim=1)
+        return emb.cpu().numpy()[0]
+
     
     def compute_gradient(self, image, celebrity):  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
         # 1) build a stacked tensor of all class‐means: shape (512,5)
