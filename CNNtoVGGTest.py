@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
    print("baseline accuracy: ", accuracy)
    
-   epsilon = 0
+   epsilon = 0.07
 
    cnn_adv = Adversary(cnn_model)
 

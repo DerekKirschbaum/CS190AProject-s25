@@ -1,30 +1,30 @@
 from perturbations import Adversary
 from vgg import VGG
-from simplecnn import SimpleCNN
-from datasets import train_set, test_set
-from newarcface import ArcFace
+from arcface import ArcFace
+from data import TRAIN_SET, TEST_SET, CLASSES
 
 vgg_path = './models/vgg.npy'
-arcface_path = './models/newarcface.npy'
+arcface_path = './models/arcface.npy'
 
 if __name__ == "__main__":
+
     vgg_model = VGG()
     arcface_model = ArcFace()
 
-    arcface_model.load(arcface_path)
     vgg_model.load(vgg_path)
+    arcface_model.load(arcface_path)
 
-
-    accuracy = arcface_model.compute_accuracy(test_set)
-
-    print("baseline accuracy: ", accuracy)
-
+    #print("Baseline accuracy for arcface model:", arcface_model.compute_accuracy(TEST_SET))
+   
     epsilon = 0.07
 
     vgg_adv = Adversary(vgg_model)
 
-    vgg_perturbed_set = vgg_adv.perturb_dataset(test_set, eps = epsilon, attack = 'fgsm')
+    vgg_perturbed_set = vgg_adv.perturb_dataset(TEST_SET, eps = epsilon, attack = 'fgsm')
 
     perturbed_accuracy = arcface_model.compute_accuracy(vgg_perturbed_set)
+    perturbed_accuracy_with_cos = arcface_model.compute_accuracy_with_cos(vgg_perturbed_set, 0.5)
 
     print("perturbed transfer accuracy: ", perturbed_accuracy)
+    print("perturbed transfer accuracy with cos threshold: ", perturbed_accuracy_with_cos)
+   
