@@ -1,7 +1,7 @@
 #imports
-from Models.vgg import VGG
-from Models.simplecnn import SimpleCNN
-from Models.arcface import ArcFace
+from models.vgg import VGG
+from models.simplecnn import SimpleCNN
+from models.arcface import ArcFace
 
 from preprocess_data import TRAIN_SET
 
