@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import os
 
-from data import VAL_SET, CLASSES
+from preprocess_data import VAL_SET, CLASSES
 
 #Model Definition
 

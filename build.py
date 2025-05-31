@@ -3,7 +3,7 @@ from Models.vgg import VGG
 from Models.simplecnn import SimpleCNN
 from Models.arcface import ArcFace
 
-from data import TRAIN_SET
+from preprocess_data import TRAIN_SET
 
 if __name__ == "__main__":
     vgg_model = VGG()

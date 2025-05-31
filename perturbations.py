@@ -1,6 +1,6 @@
 from torch.utils.data import TensorDataset
 import torch
-from data import CLASSES
+from preprocess_data import CLASSES
 
 class Adversary:
     def __init__(self, model, alpha = 0.01, pgd_iters = 10):

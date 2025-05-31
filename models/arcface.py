@@ -13,7 +13,7 @@ from insightface.model_zoo import get_model
 from numpy import dot
 from numpy.linalg import norm
 from typing import Dict
-from data import CLASSES
+from preprocess_data import CLASSES
 
 class ArcFace():
     def __init__(self): 

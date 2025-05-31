@@ -3,7 +3,7 @@ import numpy as np
 from insightface.model_zoo import get_model
 from numpy import dot
 from numpy.linalg import norm
-from data import TRAIN_SET
+from preprocess_data import TRAIN_SET
 
 # Load the recognition model directly
 model = get_model('buffalo_l', download=True)  # or manually load .onnx if you want

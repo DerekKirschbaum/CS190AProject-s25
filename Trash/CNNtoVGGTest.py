@@ -1,7 +1,7 @@
 from perturbations import Adversary
 from Models.vgg import VGG
 from Models.simplecnn import SimpleCNN
-from data import TEST_SET
+from preprocess_data import TEST_SET
 
 vgg_path = './models/vgg.npy'
 cnn_path = './models/simplecnn.npy'

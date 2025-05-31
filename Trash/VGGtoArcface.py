@@ -1,7 +1,7 @@
 from perturbations import Adversary
 from Models.vgg import VGG
 from Models.arcface import ArcFace
-from data import TRAIN_SET, TEST_SET, CLASSES
+from preprocess_data import TRAIN_SET, TEST_SET, CLASSES
 
 vgg_path = './models/vgg.npy'
 arcface_path = './models/arcface.npy'
