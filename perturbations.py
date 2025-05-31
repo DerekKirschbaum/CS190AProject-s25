@@ -53,7 +53,8 @@ class Adversary:
 
                 #Run image through the model
                 celebrity = CLASSES[label]
-                pred_logits = self.model(perturbed_image.unsqueeze(0))  # batch of 1
+                pred_logits = self.model.forward(perturbed_image.unsqueeze(0))  # batch of 1
+                
                 pred_label = torch.argmax(pred_logits, dim=1)
 
                 if pred_label.item() == label: #condition to update v

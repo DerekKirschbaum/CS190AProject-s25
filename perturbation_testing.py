@@ -77,36 +77,6 @@ if __name__ == "__main__":
     # Define the epsilons to test
     epsilons = [round(i * 0.05, 2) for i in range(10)]  # [0.0, 0.05, 0.10, ..., 0.45]
 
-    # Call evaluate_attack, using `cnn` as the source for crafting perturbations
-    evaluate_attack(
-        source_model=vgg,
-        target_models=target_models,
-        model_labels=model_labels,
-        dataset=TEST_SET,
-        epsilons=epsilons,
-        attack_method="fgsm",
-        save_path=figure_path
-    )
-
-    evaluate_attack(
-        source_model=vgg,
-        target_models=target_models,
-        model_labels=model_labels,
-        dataset=TEST_SET,
-        epsilons=epsilons,
-        attack_method="pgd",
-        save_path=figure_path
-    )
-
-    evaluate_attack(
-        source_model=vgg,
-        target_models=target_models,
-        model_labels=model_labels,
-        dataset=TEST_SET,
-        epsilons=epsilons,
-        attack_method="noise",
-        save_path=figure_path
-    )
 
     evaluate_attack(
         source_model=vgg,
