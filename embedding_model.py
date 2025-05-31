@@ -1,10 +1,11 @@
 # base_embedding_model.py
-
-import os
 import numpy as np
 from abc import ABC, abstractmethod
 from torchvision import transforms
 from typing import Dict
+import torch
+import torch.nn.functional as F
+
 
 
 class EmbeddingModel(ABC): #ABC = abstract base class
@@ -13,12 +14,11 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         self.model = model
         self.to_tensor = transforms.ToTensor()
         self.model_name = model_name
-        self.classes
+        self.classes = None
 
-    @abstractmethod
     def build(self, dataset, save_path: str):
         self.classes = dataset.dataset.classes
-        print("Building " + self.model_name)
+        print("Building " + self.model_name + "...")
         embeddings_by_class = {name: [] for name in self.classes}
         for img_tensor, label in dataset:
             name = self.classes[label]
@@ -43,9 +43,28 @@ class EmbeddingModel(ABC): #ABC = abstract base class
     def embed(self, x):
         pass
     
-    @abstractmethod
-    def compute_gradient(self, x): 
-        pass
+    def compute_gradient(self, image, celebrity):  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
+        # 1) build a stacked tensor of all class‐means: shape (512,5)
+        cm_torch = torch.stack([torch.tensor(self.class_means[c], dtype=torch.float32)
+                                for c in self.classes], dim=1)
+        # 2) prepare input for gradient
+        x = image.unsqueeze(0).clone().detach().requires_grad_(True) #(1,3,160,160)
+        # 3) forward → embedding → normalize → compute 5 “logits”
+        emb = self.model(x)                                          # (1,512)
+        embn = F.normalize(emb, p=2, dim=1)                     # (1,512)
+        logits = embn @ cm_torch                                # (1,5)
+
+        y_true = self.classes.index(celebrity)
+        label = torch.tensor([y_true], dtype=torch.long)
+
+        # 5) cross-entropy loss (we want to *increase* this)
+        loss = F.cross_entropy(logits, label)
+        loss.backward()
+
+        grad = x.grad   
+        grad = grad.squeeze(dim = 0)                        # (3,160,160)
+
+        return grad
 
     def compute_accuracy(self, dataset):
         correct = 0
@@ -69,4 +88,4 @@ class EmbeddingModel(ABC): #ABC = abstract base class
     def load(self, file_path: str):
         loaded = np.load(file_path, allow_pickle=True).item()
         self.class_means   = loaded['class_means']   
-        self.class_names   = loaded['classes']    
+        self.classes  = loaded['classes']    

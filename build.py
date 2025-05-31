@@ -1,5 +1,4 @@
 #imports
-
 from vgg import VGG
 from simplecnn import SimpleCNN
 from arcface import ArcFace
