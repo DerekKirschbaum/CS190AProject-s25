@@ -1,7 +1,7 @@
 # Imports
 import torch
 from torch.utils.data import TensorDataset
-from simplecnn import classes
+from Models.simplecnn import classes
 
 
 def epsilon_clamp(image, perturbed_image, epsilon): 

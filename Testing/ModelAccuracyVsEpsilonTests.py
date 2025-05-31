@@ -1,16 +1,16 @@
 from perturbations import Adversary
-from vgg import VGG
-from simplecnn import SimpleCNN
-from arcface import ArcFace
+from Models.vgg import VGG
+from Models.simplecnn import SimpleCNN
+from Models.arcface import ArcFace
 from data import TEST_SET
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
-vgg_path = './models/vgg.npy'
-cnn_path = './models/simplecnn.npy'
-arcface_path = "./models/arcface.npy"
+vgg_path = './Checkpoints/vgg.npy'
+cnn_path = './Checkpoints/simplecnn.npy'
+arcface_path = "./Checkpoints/arcface.npy"
 
 if __name__ == "__main__":
     # vgg_model = VGG()

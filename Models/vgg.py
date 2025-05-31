@@ -1,5 +1,5 @@
 from facenet_pytorch import  InceptionResnetV1
-from embedding_model import EmbeddingModel
+from Models.embedding_model import EmbeddingModel
 
 
 class VGG(EmbeddingModel): 

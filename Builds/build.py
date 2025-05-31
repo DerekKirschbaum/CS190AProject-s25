@@ -1,7 +1,7 @@
 #imports
-from vgg import VGG
-from simplecnn import SimpleCNN
-from arcface import ArcFace
+from Models.vgg import VGG
+from Models.simplecnn import SimpleCNN
+from Models.arcface import ArcFace
 
 from data import TRAIN_SET
 
@@ -10,9 +10,9 @@ if __name__ == "__main__":
     cnn_model = SimpleCNN()
     arcface_model = ArcFace()
 
-    vgg_path = "./models/vgg.npy" #path for model to be saved at
-    cnn_path = "./models/simplecnn.npy"
-    arcface_path = "./models/arcface.npy"
+    vgg_path = "./checkpoints/vgg.npy" #path for model to be saved at
+    cnn_path = "./checkpoints/simplecnn.npy"
+    arcface_path = "./checkpoints/arcface.npy"
 
 
     vgg_model.build(dataset = TRAIN_SET, save_path = vgg_path)

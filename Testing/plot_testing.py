@@ -1,5 +1,5 @@
 #imports
-from simplecnn import SimpleCNN
+from Models.simplecnn import SimpleCNN
 from perturbations import Adversary
 from utils import plot_lines
 

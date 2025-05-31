@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from perturbations import Adversary 
-from vgg import VGG
-from simplecnn import SimpleCNN
+from Models.vgg import VGG
+from Models.simplecnn import SimpleCNN
 from data import TEST_SET, CLASSES
 from utils import save_img, FIGURE_PATH
 
