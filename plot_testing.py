@@ -39,4 +39,4 @@ if __name__ == "__main__":
     
 
     
-    plot_lines(epsilons, [cnn_accuracy,vgg_accuracy, casia_accuracy], "FGSM attack using CNN Perturbation", "Epsilon", "Accuracy",labels = ["CNN","VGG","Casia"], save_path = figure_path)
+    plot_lines(epsilons, [cnn_accuracy,vgg_accuracy, casia_accuracy], "FGSM attack using Noise Perturbation", "Epsilon", "Accuracy",labels = ["CNN","VGG","Casia"], save_path = figure_path)
