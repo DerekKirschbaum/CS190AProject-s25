@@ -18,13 +18,14 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         self.mtcnn = MTCNN(image_size=160, margin=0)
 
     def build(self, dataset, save_path: str):
+        
         self.classes = dataset.dataset.classes
         print(f"Building {self.model_name}…")
         embeddings_by_class = {name: [] for name in self.classes}
 
         for img_tensor, label_idx in dataset:
             # img_tensor: shape [3,H,W]
-            # We want to run it through embed(), which now expects a 4D batch.
+            # We want to run it through embed(), which expects a 4D batch.
             single_batch = img_tensor.unsqueeze(0)       # → [1,3,H,W]
             emb_tensor = self.embed(single_batch)        # → [1, D]
             emb_np = emb_tensor.cpu().numpy()[0]         # extract the single row
