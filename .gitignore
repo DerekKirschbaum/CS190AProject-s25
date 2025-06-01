@@ -7,3 +7,6 @@ __pycache__/
 
 # Ignore system files (macOS)
 .DS_Store
+
+# Ignore insightface local cache download
+.insightface_cache/

@@ -1,24 +1,24 @@
 import os
-import glob
 import torch
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
-from PIL import Image
-from torchvision import transforms
-import cv2
 import numpy as np
+from torchvision import transforms
 from insightface.model_zoo import get_model
-from numpy import dot
-from numpy.linalg import norm
 from typing import Dict
 from preprocess_data import CLASSES
 
 class ArcFace():
     def __init__(self): 
+        # Use a local cache directory for model files
+        os.environ['INSIGHTFACE_HOME'] = './.insightface_cache'
         self.model = get_model('buffalo_l', download=True)
-        self.model.prepare(ctx_id=-1)
+        self.model.prepare(ctx_id=-1)  # Use CPU
         self.to_tensor = transforms.ToTensor()
         self.class_means: Dict[str, np.ndarray] = {}
+
+        # self.model = get_model('buffalo_l', download=True)
+        # self.model.prepare(ctx_id=-1)
+        # self.to_tensor = transforms.ToTensor()
+        # self.class_means: Dict[str, np.ndarray] = {}
         
        
     def build(self, dataset, save_path):
