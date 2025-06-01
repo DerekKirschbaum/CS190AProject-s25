@@ -2,6 +2,15 @@ from facenet_pytorch import InceptionResnetV1
 from models.embedding_model import EmbeddingModel
 
 
-class Casia(EmbeddingModel): 
-    def __init__(self): 
-        super().__init__(model = InceptionResnetV1(pretrained='casia-webface').eval(), model_name = 'Casia')
+# class Casia(EmbeddingModel): 
+#     def __init__(self): 
+#         super().__init__(model = InceptionResnetV1(pretrained='casia-webface').eval(), model_name = 'Casia')
+
+
+from facenet_pytorch import InceptionResnetV1
+from models.embedding_model import EmbeddingModel
+
+class Casia(EmbeddingModel):
+    def __init__(self):
+        backbone = InceptionResnetV1(pretrained='casia-webface').eval()
+        super().__init__(model=backbone, model_name='Casia')
