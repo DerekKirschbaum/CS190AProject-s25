@@ -80,7 +80,7 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         # 2) prepare input for gradient
         x = image.unsqueeze(0).clone().detach().requires_grad_(True) #(1,3,160,160)
         # 3) forward → embedding → normalize → compute 5 “logits”
-        emb = self.model(x)                                          # (1,512)
+        emb = self.model.forward(x)                                          # (1,512)
         embn = F.normalize(emb, p=2, dim=1)                     # (1,512)
         logits = embn @ cm_torch                                # (1,5)
 
