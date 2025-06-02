@@ -30,7 +30,26 @@ if __name__ == "__main__":
 
 
     evaluate_attack(
-        source_model=vgg,
+        source_model=casia,
+        target_models=target_models,
+        model_labels=model_labels,
+        dataset=TEST_SET,
+        epsilons=epsilons,
+        attack_method="fgsm",
+        save_path=figure_path
+    )
+    evaluate_attack(
+        source_model=casia,
+        target_models=target_models,
+        model_labels=model_labels,
+        dataset=TEST_SET,
+        epsilons=epsilons,
+        attack_method="noise",
+        save_path=figure_path
+    )
+
+    evaluate_attack(
+        source_model=casia,
         target_models=target_models,
         model_labels=model_labels,
         dataset=TEST_SET,
@@ -38,6 +57,17 @@ if __name__ == "__main__":
         attack_method="universal",
         save_path=figure_path
     )
+
+    evaluate_attack(
+        source_model=casia,
+        target_models=target_models,
+        model_labels=model_labels,
+        dataset=TEST_SET,
+        epsilons=epsilons,
+        attack_method="pgd",
+        save_path=figure_path
+    )
+
 
 
 
