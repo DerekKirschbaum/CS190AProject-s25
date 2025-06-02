@@ -28,7 +28,8 @@ class Adversary:
 
     def pgd(self, img, lbl, eps, iters = None):
         iters = iters or self.pgd_iters
-        x = img.clone()
+        delta = torch.empty_like(img).uniform_(-eps, eps)
+        x = self.clamp_eps(img, img + delta, eps)
         for _ in range(iters):
             x = self.step(x, lbl, self.alpha)
             x = self.clamp_eps(img, x, eps)
@@ -95,7 +96,9 @@ def evaluate_attack(
     attack_method: str,
     save_path: str
 ):
-
+    print(f"\n=== Evaluating {attack_method.upper()} Attack ===")
+    print(f"Source Model: {source_model.__class__.__name__}")
+    print("Target Models:", [m.__class__.__name__ for m in target_models])
     # 1. Create an Adversary object using the source model
     adv = Adversary(source_model)
 
@@ -104,9 +107,11 @@ def evaluate_attack(
 
     # 3. For each epsilon, perturb the dataset and evaluate each target model
     for eps in epsilons:
+        print(f"\n--- Epsilon = {eps:.2f} ---")
         perturbed_dataset = adv.perturb_dataset(dataset, eps, attack_method)
         for model_obj, label in zip(target_models, model_labels):
             acc = model_obj.compute_accuracy(perturbed_dataset)
+            print(f"Target: {label} | Accuracy: {acc:.2f}%")
             accuracies[label].append(acc)
 
     # 4. Gather accuracy lists in the same order as model_labels
