@@ -39,16 +39,18 @@ if __name__ == "__main__":
     epsilons = [round(i * 1, 2) for i in range(5)]  # [0.0, 0.05, 0.10, ..., 0.45]
 
 
-    evaluate_attack(
-            source_model= cnn,
-            target_models=target_models,
-            model_labels=model_labels,
-            dataset=TEST_SET,
-            epsilons=epsilons,
-            attack_method= 'noise',
-            save_path=figure_path
-            )
-    
+    for attack in attacks: 
+        for source in source_models: 
+            evaluate_attack(
+                    source_model= source,
+                    target_models=target_models,
+                    model_labels=model_labels,
+                    dataset=TEST_SET,
+                    epsilons=epsilons,
+                    attack_method= attack,
+                    save_path=figure_path
+                    )
+            
 
 
 
