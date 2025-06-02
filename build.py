@@ -19,5 +19,6 @@ if __name__ == "__main__":
     # vgg_model.build(dataset = TRAIN_SET, save_path = vgg_path)
     # cnn_model.build(dataset = TRAIN_SET, save_path = cnn_path)
     # casia_model.build(dataset = TRAIN_SET, save_path = casia_path)
+    
     arc_model.build(dataset = TRAIN_SET, save_path = arc_path)
 

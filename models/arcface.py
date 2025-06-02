@@ -5,37 +5,24 @@ from torchvision import transforms
 from insightface.model_zoo import get_model
 from typing import Dict
 from preprocess_data import CLASSES
+from models.embedding_model import EmbeddingModel  
+from insightface.app import FaceAnalysis
 
-class ArcFace():
-    def __init__(self): 
+
+class ArcFace(EmbeddingModel):
+    def __init__(self, model_name = "arcface"): 
+        self.app = FaceAnalysis(allowed_modules=['detection', 'recognition'])
+        self.app.prepare(ctx_id=0, det_size=(640, 640))  # adjust det_size if you like
+
         # Use a local cache directory for model files
         os.environ['INSIGHTFACE_HOME'] = './.insightface_cache'
         self.model = get_model('buffalo_l', download=True)
-        self.model.prepare(ctx_id=-1)  # Use CPU
-        self.to_tensor = transforms.ToTensor()
-        self.class_means: Dict[str, np.ndarray] = {}
+        self.model.prepare(ctx_id = -1)  # Use CPU
 
-        # self.model = get_model('buffalo_l', download=True)
-        # self.model.prepare(ctx_id=-1)
-        # self.to_tensor = transforms.ToTensor()
-        # self.class_means: Dict[str, np.ndarray] = {}
-        
+        super().__init__(self.model, model_name = model_name)
        
-    def build(self, dataset, save_path):
-        print("Building ArcFace Embeddings...")
-        embeddings_by_class = {name: [] for name in CLASSES}
-        for img_tensor, label in dataset:
-            name = CLASSES[label]
-            emb = self.embed(img_tensor)
-            embeddings_by_class[name].append(emb)
-        self.class_means = {}
-        for name, embs in embeddings_by_class.items():
-            mean_emb = np.mean(embs, axis=0)
-            self.class_means[name] = mean_emb / np.linalg.norm(mean_emb)
-        self.save(save_path)
-        print("ArcFace Embeddings Build Complete")
 
-    def forward(self, x): 
+    def cos_forward(self, x): 
         class_means = self.class_means
         emb = self.embed(x)
         emb = emb / np.linalg.norm(emb)
@@ -47,19 +34,6 @@ class ArcFace():
         #     print(f"  {celeb}: {sims[celeb]:.4f}")
         return pred, cosval
     
-    # Predicts by greatest cos sim score
-    def compute_accuracy(self, dataset): 
-        correct = 0
-        total = 0
-        for image, label in dataset: 
-            celebrity = CLASSES[label]
-            pred, _ = self.forward(image)
-            if(celebrity == pred): 
-                correct += 1
-            total += 1
-        return (correct / total) * 100
-    
-    # Counts predictions only if cos sim score is >= threshold
     def compute_accuracy_with_cos(self, dataset, threshold): 
         correct = 0
         total = 0
@@ -71,22 +45,35 @@ class ArcFace():
             total += 1
         return (correct / total) * 100
 
-    def embed(self, face_tensor: torch.Tensor) -> np.ndarray:
-        face_tensor_unnorm = face_tensor * 0.5 + 0.5
-        
-        # Convert tensor to numpy HWC RGB
-        face_np = face_tensor_unnorm.permute(1, 2, 0).cpu().numpy()
-        face_np_uint8 = (face_np * 255).astype(np.uint8)
-        
-        # Get embedding from ArcFace model
-        embedding = self.model.get_feat(face_np_uint8).flatten()
-        embedding = embedding / np.linalg.norm(embedding)
+    def embed(self, face_tensor: torch.Tensor) -> torch.Tensor:
 
-        return embedding
-    
-    def save(self, file_path):
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        np.save(file_path, self.class_means)
+        # 1) Handle “batch-of-1” vs “no batch”:
+        if face_tensor.dim() == 4 and face_tensor.size(0) == 1:
+            face_single = face_tensor.squeeze(0)   # → [3, H, W]
+        elif face_tensor.dim() == 3:
+            face_single = face_tensor              # → [3, H, W]
+        else:
+            raise ValueError(
+                f"ArcFaceModel.embed expected shape [3,H,W] or [1,3,H,W], "
+                f"but got {tuple(face_tensor.shape)}"
+            )
 
-    def load(self, file_path):
-        self.class_means = np.load(file_path, allow_pickle=True).item()
+        # 2) Undo the [-1,1] → [0,1] scaling:
+        #     face_single is in [-1,1], so (x*0.5 + 0.5) puts it into [0,1].
+        face_unnorm = (face_single * 0.5) + 0.5   # [3, H, W] in [0,1]
+
+        # 3) Convert to CPU, H×W×3, uint8:
+        #    ‣ permute (C, H, W) → (H, W, C), then multiply by 255 and cast.
+        face_np = face_unnorm.permute(1, 2, 0).cpu().numpy()        # [H, W, 3] in [0,1]
+        face_np_uint8 = (face_np * 255).astype(np.uint8)            # [H, W, 3], dtype=uint8
+
+        # 4) Run the ArcFace model to get a NumPy embedding:
+        emb_np = self.model.get_feat(face_np_uint8).flatten()       # shape (D,)
+        emb_np = emb_np / np.linalg.norm(emb_np)                    # L2-normalize in NumPy
+
+        # 5) Convert back to a torch.Tensor of shape [1, D] on the same device:
+        device = face_tensor.device
+        emb_torch = torch.from_numpy(emb_np).unsqueeze(0).to(device).float()  # [1, D] on correct device
+
+        return emb_torch
+

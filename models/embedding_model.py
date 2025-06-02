@@ -55,6 +55,7 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         return emb @ cm_torch
  
     def embed(self, face_tensor: torch.Tensor) -> np.ndarray:
+        print("CALLING ME IN THE WRONG SPOT!!!!!!")
         with torch.no_grad():
             if face_tensor.dim() == 3:
                 # Single example: add batch‐dim
