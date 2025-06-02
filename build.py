@@ -16,9 +16,8 @@ if __name__ == "__main__":
     casia_path = "./checkpoints/casia.npy"
     arc_path = "./checkpoints/arcface.npy"
 
-    # vgg_model.build(dataset = TRAIN_SET, save_path = vgg_path)
-    # cnn_model.build(dataset = TRAIN_SET, save_path = cnn_path)
-    # casia_model.build(dataset = TRAIN_SET, save_path = casia_path)
-    
+    vgg_model.build(dataset = TRAIN_SET, save_path = vgg_path)
+    cnn_model.build(dataset = TRAIN_SET, save_path = cnn_path)
+    casia_model.build(dataset = TRAIN_SET, save_path = casia_path)
     arc_model.build(dataset = TRAIN_SET, save_path = arc_path)
 

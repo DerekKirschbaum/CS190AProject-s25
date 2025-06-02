@@ -55,21 +55,20 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         return emb @ cm_torch
  
     def embed(self, face_tensor: torch.Tensor) -> np.ndarray:
-        with torch.no_grad():
-            if face_tensor.dim() == 3:
-                # Single example: add batch‐dim
-                x_in = face_tensor.unsqueeze(0)   # → [1, 3, H, W]
-            elif face_tensor.dim() == 4:
-                # Already a batch
-                x_in = face_tensor              # → [B, 3, H, W]
-            else:
-                raise ValueError(
-                    f"embed(...) expected input of dim 3 or 4, got {face_tensor.dim()}"
-                )
+        if face_tensor.dim() == 3:
+            # Single example: add batch‐dim
+            x_in = face_tensor.unsqueeze(0)   # → [1, 3, H, W]
+        elif face_tensor.dim() == 4:
+            # Already a batch
+            x_in = face_tensor              # → [B, 3, H, W]
+        else:
+            raise ValueError(
+                f"embed(...) expected input of dim 3 or 4, got {face_tensor.dim()}"
+            )
 
-            # Pass through the underlying embedding network:
-            emb = self.model(x_in)                   # → [batch_size, D]
-            emb = F.normalize(emb, p=2, dim=1)       # L2‐normalize each row
+        # Pass through the underlying embedding network:
+        emb = self.model(x_in)                   # → [batch_size, D]
+        emb = F.normalize(emb, p=2, dim=1)       # L2‐normalize each row
 
         return emb   
     
@@ -80,9 +79,7 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         # 2) prepare input for gradient
         x = image.unsqueeze(0).clone().detach().requires_grad_(True) #(1,3,160,160)
         # 3) forward → embedding → normalize → compute 5 “logits”
-        emb = self.model.forward(x)                                          # (1,512)
-        embn = F.normalize(emb, p=2, dim=1)                     # (1,512)
-        logits = embn @ cm_torch                                # (1,5)
+        logits = self.forward(x)                              # (1,5)
 
         y_true = self.classes.index(celebrity)
         label = torch.tensor([y_true], dtype=torch.long)
