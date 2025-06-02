@@ -1,5 +1,5 @@
 from facenet_pytorch import InceptionResnetV1
-from models.embedding_model import EmbeddingModel
+from models.pretrained_embedding import EmbeddingModel
 
 class Casia(EmbeddingModel): 
     def __init__(self): 

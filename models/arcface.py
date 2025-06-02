@@ -5,7 +5,7 @@ from torchvision import transforms
 from insightface.model_zoo import get_model
 from typing import Dict
 from preprocess_data import CLASSES
-from models.embedding_model import EmbeddingModel  
+from models.pretrained_embedding import EmbeddingModel  
 from insightface.app import FaceAnalysis
 import torch.nn.functional as F
 

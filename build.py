@@ -7,7 +7,6 @@ from preprocess_data import TRAIN_SET
 
 if __name__ == "__main__":
     arc_model = ArcFace()
-    cnn_2_model = ArcFace()
     vgg_model = VGG()
     cnn_model = SimpleCNN()
     casia_model = Casia()
@@ -16,11 +15,11 @@ if __name__ == "__main__":
     cnn_path = "./checkpoints/simplecnn.npy"
     casia_path = "./checkpoints/casia.npy"
     arc_path = "./checkpoints/arcface.npy"
-    cnn_2_path = "./checkpoints/arcface2.npy"
 
-    vgg_model.build(dataset = TRAIN_SET, save_path = vgg_path)
+
+
+    # vgg_model.build(dataset = TRAIN_SET, save_path = vgg_path)
     cnn_model.build(dataset = TRAIN_SET, save_path = cnn_path)
-    casia_model.build(dataset = TRAIN_SET, save_path = casia_path)
-    arc_model.build(dataset = TRAIN_SET, save_path = arc_path)
-    cnn_2_model.build(dataset = TRAIN_SET, save_path = cnn_2_path, )
+    # casia_model.build(dataset = TRAIN_SET, save_path = casia_path)
+    # arc_model.build(dataset = TRAIN_SET, save_path = arc_path)
 
