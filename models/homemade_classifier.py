@@ -10,9 +10,10 @@ from abc import ABC, abstractmethod
 #Model Definition
 
 class Classifier(nn.Module):
-    def __init__(self):
+    def __init__(self, model_name):
         super().__init__()
         self.criterion = nn.CrossEntropyLoss()
+        self.model_name = model_name
 
     @abstractmethod
     def forward(self, x):
@@ -21,7 +22,7 @@ class Classifier(nn.Module):
      # Model Training
 
     def build(self, dataset, save_path, batch_size = 128, epochs = 5, lr = 0.001, weight_decay = 0.001, val_set = VAL_SET, is_verbose = False):
-        print("Building SimpleCNN...")
+        print("Building " + self.model_name + "...")
         max_validation_accuracy = 0
         val_accuracy = 0
 
@@ -50,7 +51,7 @@ class Classifier(nn.Module):
 
             if(is_verbose): 
                 print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
-        print("SimpleCNN Build Complete")
+        print(self.model_name + " Build Complete")
     
     def compute_gradient(self, image, celebrity):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
         self.eval()

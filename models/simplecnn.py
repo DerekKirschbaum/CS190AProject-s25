@@ -10,12 +10,12 @@ from preprocess_data import VAL_SET, CLASSES
 #Model Definition
 
 class SimpleCNN(Classifier):
-    def __init__(self, classes = CLASSES, height = 160, length = 160):
+    def __init__(self, classes = CLASSES, height = 160, length = 160, model_name = "SimpleCNN"):
         self.classes = classes
         self.height = height
         self.length = length
 
-        super().__init__()
+        super().__init__(model_name = model_name)
         self.conv1 = nn.Conv2d(in_channels = 3, out_channels = 6, kernel_size = 3, padding = 1, stride = 1)
         self.pool = nn.MaxPool2d(kernel_size = 2, stride = 2)
         self.conv2 = nn.Conv2d(in_channels = 6, out_channels = 16, kernel_size = 3, padding = 1, stride = 1)

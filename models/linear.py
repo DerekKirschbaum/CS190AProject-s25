@@ -9,13 +9,13 @@ from preprocess_data import CLASSES
 
 #Model Definition
 
-class SimpleCNN(Classifier):
-    def __init__(self, classes = CLASSES, height = 160, length = 160):
+class Linear(Classifier):
+    def __init__(self, classes = CLASSES, height = 160, length = 160, model_name = "Linear"):
         self.classes = classes
         self.height = height
         self.length = length
 
-        super().__init__()
+        super().__init__(model_name = model_name)
 
         flat_feats = 3 * height * length
 
