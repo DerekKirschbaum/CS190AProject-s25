@@ -1,4 +1,4 @@
-from perturbations import Adversary
+from functions.perturbations import Adversary
 from models.vgg import VGG
 from models.arcface import ArcFace
 from preprocess_data import TRAIN_SET, TEST_SET, CLASSES

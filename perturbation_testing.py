@@ -3,7 +3,7 @@ from models.simplecnn import SimpleCNN
 from models.vgg import VGG
 from models.casia import Casia
 from models.arcface import ArcFace
-from perturbations import evaluate_attack
+from functions.perturbations import evaluate_attack
 
 from preprocess_data import TEST_SET
 

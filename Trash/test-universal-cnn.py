@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from perturbations import Adversary 
+from functions.perturbations import Adversary 
 from Models.vgg import VGG
 from Models.simplecnn import SimpleCNN
 from preprocess_data import TEST_SET, CLASSES
-from utils import save_img, FIGURE_PATH
+from functions.utils import save_img, FIGURE_PATH
 
 
 if __name__ == "__main__":

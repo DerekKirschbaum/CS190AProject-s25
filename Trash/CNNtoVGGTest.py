@@ -1,4 +1,4 @@
-from perturbations import Adversary
+from functions.perturbations import Adversary
 from Models.vgg import VGG
 from Models.simplecnn import SimpleCNN
 from preprocess_data import TEST_SET
