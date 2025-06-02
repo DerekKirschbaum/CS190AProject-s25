@@ -1,22 +1,14 @@
 import torch
-import cv2
 from insightface.app import FaceAnalysis
-from embedding_model import EmbeddingModel
-
-# arcface_model.py
-
 import numpy as np
 import torch
 import torch.nn.functional as F
-from typing import Dict
-from abc import ABC
-from torchvision import transforms
 
 from insightface.app import FaceAnalysis
 from models.embedding_model import EmbeddingModel  # your base class
 
 
-class ArcFaceEmbedding(EmbeddingModel):
+class ArcFace(EmbeddingModel):
     def __init__(self, device: str = "cpu", model_name: str = "ArcFace"):
         """
         device: "cpu" or "cuda:0" (whatever you want to run on).
