@@ -1,4 +1,4 @@
-from functions.perturbations import Adversary
+from perturbations.perturbations import Adversary
 from models.vgg import VGG
 from models.simplecnn import SimpleCNN
 from models.arcface import ArcFace

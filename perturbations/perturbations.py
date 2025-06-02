@@ -1,7 +1,7 @@
 from torch.utils.data import TensorDataset
 import torch
 from preprocess_data import CLASSES
-from functions.utils import plot_lines
+from perturbations.utils import plot_lines
 
 class Adversary:
     def __init__(self, model, alpha = 0.01, pgd_iters = 10):
