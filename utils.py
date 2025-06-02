@@ -45,6 +45,15 @@ def plot_lines(x, ys, title, xlabel, ylabel, save_path, labels = None, **plot_kw
     plt.grid(True)
     
 
-    plt.savefig(save_path + title)
+    # Construct filename with suffix if needed
+    base_filename = os.path.join(save_path, title)
+    full_filename = base_filename + ".png"
+    count = 1
+    while os.path.exists(full_filename):
+        full_filename = f"{base_filename}_{count}.png"
+        count += 1
+
+    plt.savefig(full_filename)
+    print(f"[✓] Plot saved to {full_filename}")
 
 

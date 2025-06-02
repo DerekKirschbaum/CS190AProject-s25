@@ -28,6 +28,7 @@ class Adversary:
 
     def pgd(self, img, lbl, eps, iters = None):
         iters = iters or self.pgd_iters
+        self.alpha = eps/10
         delta = torch.empty_like(img).uniform_(-eps, eps)
         x = self.clamp_eps(img, img + delta, eps)
         for _ in range(iters):
@@ -45,6 +46,7 @@ class Adversary:
 
     def make_universal(self, dataset, eps, alpha = None, iters = None):
         alpha = alpha or self.alpha
+        alpha = eps/10
         iters = iters or self.pgd_iters
         v = torch.zeros_like(dataset[0][0])
         for _ in range(iters):
