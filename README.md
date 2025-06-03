@@ -28,3 +28,7 @@ To run the code:
 5. **Modify CONFIG:**\
     In the CONFIG section of FGSM_Perturbed_Images_Facenet.py, modify variables to vary certain parameters influencing the FGSM attack and our results
 
+
+6. Overleaf Link: 
+https://www.overleaf.com/2554581631jmfyfjjctffh#0e5560
+

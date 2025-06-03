@@ -24,32 +24,7 @@ class ArcFace(EmbeddingModel):
         self.model.prepare(ctx_id = -1)  # Use CPU
 
         super().__init__(self.model, model_name = model_name)
-       
-
-
-    def cos_forward(self, x): 
-        class_means = self.class_means
-        emb = self.embed(x)
-        emb = emb / np.linalg.norm(emb)
-        sims = {c: np.dot(emb, class_means[c]) for c in CLASSES}
-        pred = max(sims, key=sims.get)
-        cosval = sims[pred]
-        # print("Similarity scores:")
-        # for celeb in CLASSES:
-        #     print(f"  {celeb}: {sims[celeb]:.4f}")
-        return pred, cosval
     
-    def compute_accuracy_with_cos(self, dataset, threshold): 
-        correct = 0
-        total = 0
-        for image, label in dataset: 
-            celebrity = CLASSES[label]
-            pred, val = self.forward(image)
-            if(celebrity == pred) and (val >= threshold): 
-                correct += 1
-            total += 1
-        return (correct / total) * 100
-
 
     def embed(self, face_tensor: torch.Tensor) -> torch.Tensor:
 
@@ -84,30 +59,32 @@ class ArcFace(EmbeddingModel):
         return emb_torch
 
 
-    def cos_forward(self, x): 
-        class_means = self.class_means
-        emb = self.embed(x)
-        emb = emb / np.linalg.norm(emb)
-        sims = {c: np.dot(emb, class_means[c]) for c in CLASSES}
-        pred = max(sims, key=sims.get)
-        cosval = sims[pred]
-        # print("Similarity scores:")
-        # for celeb in CLASSES:
-        #     print(f"  {celeb}: {sims[celeb]:.4f}")
-        return pred, cosval
+    # def cos_forward(self, x): 
+    #     class_means = self.class_means
+    #     emb = self.embed(x)
+    #     emb = emb / np.linalg.norm(emb)
+    #     sims = {c: np.dot(emb, class_means[c]) for c in CLASSES}
+    #     pred = max(sims, key=sims.get)
+    #     cosval = sims[pred]
+    #     # print("Similarity scores:")
+    #     # for celeb in CLASSES:
+    #     #     print(f"  {celeb}: {sims[celeb]:.4f}")
+    #     return pred, cosval
     
-    def compute_accuracy_with_cos(self, dataset, threshold): 
-        correct = 0
-        cos = 0
-        total = 0
-        for image, label in dataset: 
-            celebrity = CLASSES[label]
-            pred, val = self.cos_forward(image)
-            if(celebrity == pred):
-                correct += 1
-            if(celebrity == pred) and (val >= threshold): 
-                cos += 1
-            total += 1
-        accreg = (correct / total) * 100
-        acccos = (cos / total) * 100
-        return accreg, acccos
+    # def compute_accuracy_with_cos(self, dataset, threshold): 
+    #     correct = 0
+    #     cos = 0
+    #     total = 0
+    #     for image, label in dataset: 
+    #         celebrity = CLASSES[label]
+    #         pred, val = self.cos_forward(image)
+    #         if(celebrity == pred):
+    #             correct += 1
+    #         if(celebrity == pred) and (val >= threshold): 
+    #             cos += 1
+    #         total += 1
+    #     accreg = (correct / total) * 100
+    #     acccos = (cos / total) * 100
+    #     return accreg, acccos
+
+

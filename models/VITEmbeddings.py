@@ -39,29 +39,6 @@ class ViTEmbedder(EmbeddingModel):
         emb = F.normalize(emb, dim=1)
         return emb.to(face_tensor.device)
 
-    def cos_forward(self, x):
-        class_means = self.class_means
-        emb = self.embed(x).squeeze(0).cpu().numpy()
-        sims = {c: np.dot(emb, class_means[c]) for c in CLASSES}
-        pred = max(sims, key=sims.get)
-        cosval = sims[pred]
-        return pred, cosval
-
-    def compute_accuracy_with_cos(self, dataset, threshold): 
-        correct = 0
-        cos = 0
-        total = 0
-        for image, label in dataset: 
-            celebrity = CLASSES[label]
-            pred, val = self.cos_forward(image)
-            if(celebrity == pred):
-                correct += 1
-            if(celebrity == pred) and (val >= threshold): 
-                cos += 1
-            total += 1
-        accreg = (correct / total) * 100
-        acccos = (cos / total) * 100
-        return accreg, acccos
     
     def compute_gradient(self, image, celebrity):
         # Resize to 224x224 for ViT
@@ -91,3 +68,27 @@ class ViTEmbedder(EmbeddingModel):
         grad_resized = F.interpolate(x.grad, size=(160, 160), mode='bilinear', align_corners=False)
         return grad_resized.squeeze(0)  # → shape [3,160,160]
 
+
+    # def cos_forward(self, x):
+    #     class_means = self.class_means
+    #     emb = self.embed(x).squeeze(0).cpu().numpy()
+    #     sims = {c: np.dot(emb, class_means[c]) for c in CLASSES}
+    #     pred = max(sims, key=sims.get)
+    #     cosval = sims[pred]
+    #     return pred, cosval
+
+    # def compute_accuracy_with_cos(self, dataset, threshold): 
+    #     correct = 0
+    #     cos = 0
+    #     total = 0
+    #     for image, label in dataset: 
+    #         celebrity = CLASSES[label]
+    #         pred, val = self.cos_forward(image)
+    #         if(celebrity == pred):
+    #             correct += 1
+    #         if(celebrity == pred) and (val >= threshold): 
+    #             cos += 1
+    #         total += 1
+    #     accreg = (correct / total) * 100
+    #     acccos = (cos / total) * 100
+    #     return accreg, acccos

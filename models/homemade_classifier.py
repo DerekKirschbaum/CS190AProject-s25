@@ -100,9 +100,9 @@ class Classifier(nn.Module):
             if predicted.item() == label and max_prob.item() >= threshold:
                 cos += 1
             total += 1
-        acc = (correct / total) * 100
-        acc2 = (cos / total) * 100
-        return acc, acc2
+        acc_reg = (correct / total) * 100
+        acc_cos = (cos / total) * 100
+        return acc_reg, acc_cos
    
 
     def save(self, file_path):

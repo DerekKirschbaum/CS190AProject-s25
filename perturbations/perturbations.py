@@ -96,7 +96,8 @@ def evaluate_attack(
     dataset,
     epsilons: list,
     attack_method: str,
-    save_path: str
+    save_path: str,
+    threshold: float = 0.5
 ):
     print(f"\n=== Evaluating {attack_method.upper()} Attack ===")
     print(f"Source Model: {source_model.__class__.__name__}")
@@ -105,24 +106,33 @@ def evaluate_attack(
     adv = Adversary(source_model)
 
     # 2. Prepare a place to accumulate accuracies for each target
-    accuracies = {label: [] for label in model_labels}
+    accuracies_reg = {label: [] for label in model_labels}
+    accuracies_cos = {label: [] for label in model_labels}
 
     # 3. For each epsilon, perturb the dataset and evaluate each target model
     for eps in epsilons:
         print(f"\n--- Epsilon = {eps:.2f} ---")
         perturbed_dataset = adv.perturb_dataset(dataset, eps, attack_method)
         for model_obj, label in zip(target_models, model_labels):
-            acc = model_obj.compute_accuracy(perturbed_dataset)
-            print(f"Target: {label} | Accuracy: {acc:.2f}%")
-            accuracies[label].append(acc)
+            acc_reg, acc_cos = model_obj.compute_accuracy_with_cos(perturbed_dataset, threshold)
+            
+            print(f"Reg Accuracy: Target: {label} | Accuracy: {acc_reg:.2f}%")
+            print(f"Cos Accuracy: Target: {label} | Accuracy: {acc_cos:.2f}%")
+            accuracies_reg[label].append(acc_reg)
+            accuracies_cos[label].append(acc_cos)
 
     # 4. Gather accuracy lists in the same order as model_labels
-    accuracy_lists = [accuracies[label] for label in model_labels]
+    accuracy_lists_reg = [accuracies_reg[label] for label in model_labels]
+    accuracy_lists_cos = [accuracies_cos[label] for label in model_labels]
+
+
 
     # 5. Build plot metadata
-    title = f"{attack_method.upper()} Attack (Source: {source_model.__class__.__name__}): Accuracy vs Epsilon"
+    title_reg = f"{attack_method.upper()} Attack (Source: {source_model.__class__.__name__}): Nearest Class Accuracy vs Epsilon,"
+    title_cos = f"{attack_method.upper()} Attack (Source: {source_model.__class__.__name__}): Threshold Class Accuracy vs Epsilon"
     xlabel = "Epsilon"
-    ylabel = "Accuracy %"
+    ylabel_reg = "Nearest Class Accuracy %"
+    ylabel_cos = "Threshold Class Accuracy % "
     labels = model_labels
 
     # 6. Use plot_lines to create and save the figure
@@ -130,62 +140,20 @@ def evaluate_attack(
     #    so append ".png" to save_path+title when saving on disk.
     plot_lines(
         x=epsilons,
-        ys=accuracy_lists,
-        title=title,
+        ys=accuracy_lists_reg,
+        title=title_reg,
         xlabel=xlabel,
-        ylabel=ylabel,
+        ylabel=ylabel_reg,
         save_path=save_path,
         labels=labels,
         marker='o'
     )
-
-def evaluate_attack_cos(
-    source_model,
-    target_models: list,
-    model_labels: list,
-    dataset,
-    epsilons: list,
-    attack_method: str,
-    save_path: str
-):
-    print(f"\n=== Evaluating {attack_method.upper()} Attack ===")
-    print(f"Source Model: {source_model.__class__.__name__}")
-    print("Target Models:", [m.__class__.__name__ for m in target_models])
-    # 1. Create an Adversary object using the source model
-    adv = Adversary(source_model)
-
-    # 2. Prepare a place to accumulate accuracies for each target
-    accuracies = {label: [] for label in model_labels}
-
-    # 3. For each epsilon, perturb the dataset and evaluate each target model
-    for eps in epsilons:
-        print(f"\n--- Epsilon = {eps:.2f} ---")
-        perturbed_dataset = adv.perturb_dataset(dataset, eps, attack_method)
-        for model_obj, label in zip(target_models, model_labels):
-            acc, acc2 = model_obj.compute_accuracy_with_cos(perturbed_dataset, 0.5)
-            
-            print(f"Reg Accuracy: Target: {label} | Accuracy: {acc2:.2f}%")
-            print(f"Cos Accuracy: Target: {label} | Accuracy: {acc:.2f}%")
-            accuracies[label].append(acc)
-
-    # 4. Gather accuracy lists in the same order as model_labels
-    accuracy_lists = [accuracies[label] for label in model_labels]
-
-    # 5. Build plot metadata
-    title = f"{attack_method.upper()} Attack (Source: {source_model.__class__.__name__}): Accuracy vs Epsilon"
-    xlabel = "Epsilon"
-    ylabel = "Accuracy %"
-    labels = model_labels
-
-    # 6. Use plot_lines to create and save the figure
-    #    plot_lines will save to save_path + title (without extension),
-    #    so append ".png" to save_path+title when saving on disk.
     plot_lines(
         x=epsilons,
-        ys=accuracy_lists,
-        title=title,
+        ys=accuracy_lists_cos,
+        title=title_cos,
         xlabel=xlabel,
-        ylabel=ylabel,
+        ylabel=ylabel_cos,
         save_path=save_path,
         labels=labels,
         marker='o'
