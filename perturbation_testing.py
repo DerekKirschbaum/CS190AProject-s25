@@ -33,10 +33,10 @@ if __name__ == "__main__":
     target_models = [linear, cnn, vgg, casia, arcface]
     source_models = [linear, cnn, vgg, casia]
     model_labels  = ["Linear", "CNN", "InceptionResnetV1(VGG)", "InceptionResnetV1(Casia)", "ArcFace"]
-    attacks = ["universal", "pgd"]
+    attacks = ["fgsm", "universal", "pgd", "noise"]
 
     # Define the epsilons to test
-    epsilons = [round(i * 1, 2) for i in range(5)]  # [0.0, 0.05, 0.10, ..., 0.45]
+    epsilons = [round(i * 0.05, 2) for i in range(4)]  
 
 
     for attack in attacks: 
