@@ -36,25 +36,24 @@ if __name__ == "__main__":
 
     # Prepare the list of target models and their labels
     target_models = [linear, cnn, vgg, casia, arcface, vit]
-    source_models = [linear, cnn, vgg, casia]
+    source_models = [linear, cnn, vgg, casia, vit]
     model_labels  = ["Linear", "SimpleCNN", "ResNet_v1(VGG)", "ResNet_v1(Casia)", "ArcFace", "VIT"]
-    attacks = ["fgsm", "noise"]
+    attacks = ["fgsm", "noise","universal", "pgd"]
 
     # Define the epsilons to test
-    epsilons = [round(i * 0.1, 2) for i in range(1)]  
+    epsilons = [round(i * 0.04, 2) for i in range(6)]
 
-
-    
-    evaluate_attack(
-            source_model= linear,
-            target_models=target_models,
-            model_labels=model_labels,
-            dataset=TEST_SET,
-            epsilons=epsilons,
-            attack_method= "fgsm",
-            save_path=figure_path
+    for attack in attacks:
+        evaluate_attack(
+                source_model = vit,
+                target_models=target_models,
+                model_labels=model_labels,
+                dataset=TEST_SET,
+                epsilons=epsilons,
+                attack_method= attack,
+                save_path=figure_path
             )
-            
+                
 
 
 
