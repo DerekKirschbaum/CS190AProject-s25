@@ -128,7 +128,7 @@ def evaluate_attack(
 
 
     # 5. Build plot metadata
-    title_reg = f"{attack_method.upper()} Attack (Source: {source_model.__class__.__name__}): Nearest Class Accuracy vs Epsilon,"
+    title_reg = f"{attack_method.upper()} Attack (Source: {source_model.__class__.__name__}): Nearest Class Accuracy vs Epsilon"
     title_cos = f"{attack_method.upper()} Attack (Source: {source_model.__class__.__name__}): Threshold Class Accuracy vs Epsilon"
     xlabel = "Epsilon"
     ylabel_reg = "Nearest Class Accuracy %"

@@ -27,7 +27,6 @@ def plot_lines(x, ys, title, xlabel, ylabel, save_path, labels = None, **plot_kw
     
     for idx, y in enumerate(ys):
         x_vals = x if x is not None else list(range(len(y)))
-        
         if labels and idx < len(labels):
             plt.plot(x_vals, y, label=labels[idx], **plot_kwargs)
         else:
@@ -39,11 +38,18 @@ def plot_lines(x, ys, title, xlabel, ylabel, save_path, labels = None, **plot_kw
         plt.xlabel(xlabel)
     if ylabel:
         plt.ylabel(ylabel)
-    if labels:
-        plt.legend()
-    
+
+    # Set x-axis ticks to increase by 0.02
+    if x is not None and all(isinstance(val, (float, int)) for val in x):
+        xtick_min, xtick_max = min(x), max(x)
+        plt.xticks(np.arange(xtick_min, xtick_max + 0.02, 0.02))
+
     plt.grid(True)
-    
+
+    # Legend outside the plot on the right
+    if labels:
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.subplots_adjust(right=0.75)  # Add padding on right side
 
     # Construct filename with suffix if needed
     base_filename = os.path.join(save_path, title)
