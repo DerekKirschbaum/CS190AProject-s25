@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import numpy as np
 from PIL import Image
 from transformers import AutoModel, AutoImageProcessor
-from models.embedding_model import EmbeddingModel
+from models.pretrained_embedding import EmbeddingModel
 from preprocess_data import CLASSES
 
 
