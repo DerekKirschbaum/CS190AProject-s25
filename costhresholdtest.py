@@ -4,7 +4,8 @@ from models.vgg import VGG
 from models.casia import Casia
 from models.arcface import ArcFace
 from models.VITEmbeddings import ViTEmbedder
-from perturbations import evaluate_attack_cos
+from models.linear import Linear
+from perturbations.perturbations import evaluate_attack_cos
 
 from preprocess_data import TEST_SET, TRAIN_SET
 
@@ -16,6 +17,7 @@ if __name__ == "__main__":
     casia = Casia()
     arcface = ArcFace()
     vit = ViTEmbedder()
+    linear = Linear()
 
     cnn_path = "./checkpoints/simplecnn.npy"
     vgg_path = "./checkpoints/vgg.npy"
@@ -27,6 +29,7 @@ if __name__ == "__main__":
     vgg.load(vgg_path)
     casia.load(casia_path)
     arcface.load(arc_path)
+
     vit.load(vit_path)
 
     # Prepare the list of target models and their labels

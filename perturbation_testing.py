@@ -4,7 +4,9 @@ from models.vgg import VGG
 from models.casia import Casia
 from models.arcface import ArcFace
 from models.linear import Linear
-from perturbations.perturbations import evaluate_attack
+from models.VITEmbeddings import ViTEmbedder
+
+from perturbations.perturbations import evaluate_attack_cos
 
 from preprocess_data import TEST_SET
 
@@ -16,23 +18,26 @@ if __name__ == "__main__":
     casia = Casia()
     arcface = ArcFace()
     linear = Linear()
+    vit = ViTEmbedder()
 
     cnn_path = "./checkpoints/simplecnn.npy"
     vgg_path = "./checkpoints/vgg.npy"
     casia_path = "./checkpoints/casia.npy"
     arc_path = "./checkpoints/arcface.npy"
     linear_path = "./checkpoints/linear.npy"
+    vit_path = "./checkpoints/linear.npy"
 
     cnn.load(cnn_path)
     vgg.load(vgg_path)
     casia.load(casia_path)
     arcface.load(arc_path)
     linear.load(linear_path)
+    vit.load(vit_path)
 
     # Prepare the list of target models and their labels
-    target_models = [linear, cnn, vgg, casia, arcface]
+    target_models = [linear, cnn, vgg, casia, arcface, vit]
     source_models = [linear, cnn, vgg, casia]
-    model_labels  = ["Linear", "CNN", "InceptionResnetV1(VGG)", "InceptionResnetV1(Casia)", "ArcFace"]
+    model_labels  = ["Linear", "CNN", "InceptionResnetV1(VGG)", "InceptionResnetV1(Casia)", "ArcFace", "Vit"]
     attacks = ["fgsm", "universal", "pgd", "noise"]
 
     # Define the epsilons to test
@@ -41,7 +46,7 @@ if __name__ == "__main__":
 
     for attack in attacks: 
         for source in source_models: 
-            evaluate_attack(
+            evaluate_attack_cos(
                     source_model= source,
                     target_models=target_models,
                     model_labels=model_labels,
