@@ -162,11 +162,7 @@ def evaluate_attack_cos(
         print(f"\n--- Epsilon = {eps:.2f} ---")
         perturbed_dataset = adv.perturb_dataset(dataset, eps, attack_method)
         for model_obj, label in zip(target_models, model_labels):
-            if label == "VGG" or label == "ArcFace" or label == "VIT" or label == "Casia":
-                acc, acc2 = model_obj.compute_accuracy_with_cos(perturbed_dataset, 0.5)
-            else:
-                acc = model_obj.compute_accuracy(perturbed_dataset)
-                acc2 = acc
+            acc, acc2 = model_obj.compute_accuracy_with_cos(perturbed_dataset, 0.5)
             
             print(f"Reg Accuracy: Target: {label} | Accuracy: {acc2:.2f}%")
             print(f"Cos Accuracy: Target: {label} | Accuracy: {acc:.2f}%")

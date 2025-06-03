@@ -82,6 +82,27 @@ class Classifier(nn.Module):
             total += 1
         accuracy = correct / total * 100
         return accuracy
+    
+    def compute_accuracy_with_cos(self, dataset, threshold=0.5):
+        correct = 0
+        cos = 0
+        total = 0
+        self.eval()
+        softmax = nn.Softmax(dim=1)
+        for image, label in dataset:
+            image = image.unsqueeze(0)
+            outputs = self.forward(image)
+            probs = softmax(outputs)
+            max_prob, predicted = torch.max(probs, dim=1)
+            _, pred = torch.max(outputs, 1)
+            if(label == pred): 
+                correct += 1
+            if predicted.item() == label and max_prob.item() >= threshold:
+                cos += 1
+            total += 1
+        acc = (correct / total) * 100
+        acc2 = (cos / total) * 100
+        return acc, acc2
    
 
     def save(self, file_path):

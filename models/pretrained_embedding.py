@@ -149,12 +149,19 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         cos = 0
         total = 0
         for image, label in dataset: 
-            celebrity = CLASSES[label]
-            pred, val = self.cos_forward(image)
-            if(celebrity == pred):
+            image = image.unsqueeze(0)  # Add batch dimension: [1, C, H, W]
+            cos_sim = self.forward(image)  # [1, num_classes]
+            
+            # Get predicted class and its similarity value
+            val, pred_idx = torch.max(cos_sim, dim=1)  # both are shape [1]
+            pred_idx = pred_idx.item()
+            val = val.item()
+            
+            if pred_idx == label:
                 correct += 1
-            if(celebrity == pred) and (val >= threshold): 
-                cos += 1
+                if val >= threshold:
+                    cos += 1
+
             total += 1
         accreg = (correct / total) * 100
         acccos = (cos / total) * 100
