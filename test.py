@@ -24,7 +24,7 @@ for i in range(10):
     print("Regular")
 
     pred = vgg.forward(batch)
-    print("vgg pred: ", softmax(pred))
+    print("vgg pred: ", pred)
 
     pred = linear.forward(batch)
     print("linear pred: ", softmax(pred))
@@ -37,7 +37,7 @@ for i in range(10):
     print("Perturbed")
 
     pred = vgg.forward(batch)
-    print("vgg pred: ", softmax(pred))
+    print("vgg pred: ", pred)
 
     pred = linear.forward(batch)
     print("linear pred: ", softmax(pred))
