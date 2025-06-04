@@ -44,7 +44,10 @@ def plot_lines(x, ys, title, xlabel, ylabel, save_path, labels = None, **plot_kw
         xtick_min, xtick_max = min(x), max(x)
         plt.xticks(np.arange(xtick_min, xtick_max + 0.02, 0.02))
     
-    plt.ylim(0, 100)
+    plt.ylim(-5, 105)
+
+    # Set y-axis ticks and grid lines manually at 0, 20, ..., 100
+    plt.yticks(np.arange(0, 101, 20))
 
 
     plt.grid(True)
