@@ -83,7 +83,7 @@ class Classifier(nn.Module):
         accuracy = correct / total * 100
         return accuracy
     
-    def compute_accuracy_with_cos(self, dataset, threshold=0.5):
+    def compute_accuracy_with_cos(self, dataset, threshold = 0.5):
         correct = 0
         cos = 0
         total = 0

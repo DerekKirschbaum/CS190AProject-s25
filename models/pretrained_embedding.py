@@ -132,18 +132,6 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         self.class_means  =  loaded['class_means']   
         self.classes = loaded['classes']    
 
-    def cos_forward(self, x): 
-        class_means = self.class_means
-        emb = self.embed(x)
-        emb = emb / np.linalg.norm(emb)
-        sims = {c: np.dot(emb, class_means[c]) for c in CLASSES}
-        pred = max(sims, key=sims.get)
-        cosval = sims[pred]
-        # print("Similarity scores:")
-        # for celeb in CLASSES:
-        #     print(f"  {celeb}: {sims[celeb]:.4f}")
-        return pred, cosval
-    
     def compute_accuracy_with_cos(self, dataset, threshold): 
         correct = 0
         cos = 0
