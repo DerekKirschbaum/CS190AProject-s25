@@ -41,20 +41,20 @@ if __name__ == "__main__":
     attacks = ["fgsm", "noise","universal", "pgd"]
 
     # Define the epsilons to test
-    epsilons = [round(i * 0.04, 2) for i in range(1)]
+    epsilons = [round(i * 0.04, 2) for i in range(6)]
 
     
     for attack in attacks:
-        for source_model in source_models:
-            evaluate_attack(
-                source_model = source_model,
-                target_models=target_models,
-                model_labels=model_labels,
-                dataset=TEST_SET,
-                epsilons=epsilons,
-                attack_method= attack,
-                save_path=figure_path
-            )
+        evaluate_attack(
+            source_model = vit,
+            target_models=target_models,
+            model_labels=model_labels,
+            dataset=TEST_SET,
+            epsilons=epsilons,
+            attack_method= attack,
+            save_path=figure_path
+        )
+  
                 
 
 
