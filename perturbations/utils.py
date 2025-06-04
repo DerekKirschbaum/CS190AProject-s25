@@ -43,6 +43,9 @@ def plot_lines(x, ys, title, xlabel, ylabel, save_path, labels = None, **plot_kw
     if x is not None and all(isinstance(val, (float, int)) for val in x):
         xtick_min, xtick_max = min(x), max(x)
         plt.xticks(np.arange(xtick_min, xtick_max + 0.02, 0.02))
+    
+    plt.ylim(0, 100)
+
 
     plt.grid(True)
 
