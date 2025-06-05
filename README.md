@@ -1,5 +1,7 @@
 # CS190AProject-s25
 
+Link to paper: https://www.overleaf.com/2554581631jmfyfjjctffh#0e5560
+
 ## Running the Code
 
 To run the code:
@@ -10,25 +12,33 @@ To run the code:
    cd CS190AProject-s25
 
 2. **Activate virtual environment:**
-   ```bash
-   source env311/bin/activate
-   ```
+   
    Create an env311 folder first if you don't have one already:
    ```bash
    python3.11 -m venv env311
+   ```
 
-3. **Install necessary packages:**
+   Then run:
    ```bash
-   pip install numpy torch torchvision facenet-pytorch matplotlib pillow insightface
+   source env311/bin/activate
+   ```
 
-4. **Run the program:**
+4. **Install necessary packages:**
    ```bash
-   python FGSM_Perturbed_Images_Facenet.py
+   pip install numpy torch torchvision facenet-pytorch matplotlib pillow insightface transforms
 
-5. **Modify CONFIG:**\
-    In the CONFIG section of FGSM_Perturbed_Images_Facenet.py, modify variables to vary certain parameters influencing the FGSM attack and our results
-
-
-6. Overleaf Link: 
-https://www.overleaf.com/2554581631jmfyfjjctffh#0e5560
+5. **Run the program:**
+   To test specific types of attacks, modify epsilon values, or modify the models being tested, edit perturbation_testing.py and then run:
+   ```bash
+   python perturbation_testing.py
+   ```
+   To view visuals of specific gradients or to save perturbed images, edit visual.py and then run:
+   ```bash
+   python visual.py
+   ```
+   If you would like to vary the dataset and establish a new random seed for train/validation/test split, edit preprocess_data.py and then run:
+   ```bash
+   python preprocess_data.py
+   python build.py
+   ```
 
