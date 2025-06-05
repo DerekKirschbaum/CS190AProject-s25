@@ -11,6 +11,8 @@ def save_img(img, path, title = ""):
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.title(title)
     plt.savefig(path, dpi = 100, bbox_inches = "tight", pad_inches = 0)
+    plt.xticks([])
+    plt.yticks([])
 
 
 def plot_lines(x, ys, title, xlabel, ylabel, save_path, labels = None, **plot_kwargs):#plot keyword args

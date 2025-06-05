@@ -4,6 +4,7 @@ from models.vgg import VGG
 from models.casia import Casia
 from models.arcface import ArcFace
 from models.linear import Linear
+from models.tinycnn import TinyCNN
 from models.VITEmbeddings import ViTEmbedder
 
 from perturbations.perturbations import evaluate_attack
@@ -19,6 +20,7 @@ if __name__ == "__main__":
     arcface = ArcFace()
     linear = Linear()
     vit = ViTEmbedder()
+    tinycnn = TinyCNN()
 
     cnn_path = "./checkpoints/simplecnn.npy"
     vgg_path = "./checkpoints/vgg.npy"
@@ -26,6 +28,8 @@ if __name__ == "__main__":
     arc_path = "./checkpoints/arcface.npy"
     linear_path = "./checkpoints/linear.npy"
     vit_path = "./checkpoints/vit.npy"
+    tiny_path = "./checkpoints/tiny.npy"
+    
 
     cnn.load(cnn_path)
     vgg.load(vgg_path)
@@ -33,27 +37,28 @@ if __name__ == "__main__":
     arcface.load(arc_path)
     linear.load(linear_path)
     vit.load(vit_path)
+    tinycnn.load(tiny_path)
 
     # Prepare the list of target models and their labels
-    target_models = [linear, cnn, vgg, casia, arcface, vit]
-    source_models = [linear, cnn, vgg, casia]
-    model_labels  = ["Linear", "SimpleCNN", "ResNet_v1(VGG)", "ResNet_v1(Casia)", "ArcFace", "VIT"]
-    attacks = ["fgsm", "noise","universal", "pgd"]
+    target_models = [tinycnn, cnn, linear, casia, vgg, arcface, vit]
+    source_models = [tinycnn, cnn, linear, casia, vgg, vit]
+    model_labels  = ["TinyCNN", "SimpleCNN", "Linear", "ResNet_v1(Casia)", "ResNet_v1(VGG)", "ArcFace", "VIT"]
+    attacks = ["fgsm", "universal", "pgd"]
 
     # Define the epsilons to test
     epsilons = [round(i * 0.04, 2) for i in range(6)]
-
     
     for attack in attacks:
-        evaluate_attack(
-            source_model = vit,
-            target_models=target_models,
-            model_labels=model_labels,
-            dataset=TEST_SET,
-            epsilons=epsilons,
-            attack_method= attack,
-            save_path=figure_path
-        )
+        for source_model in source_models:
+            evaluate_attack(
+                source_model = source_model,
+                target_models=target_models,
+                model_labels=model_labels,
+                dataset=TEST_SET,
+                epsilons=epsilons,
+                attack_method= attack,
+                save_path=figure_path
+            )
   
                 
 
