@@ -8,7 +8,6 @@ from models.tinycnn import TinyCNN
 from preprocess_data import TEST_SET, CLASSES
 from perturbations.perturbations import Adversary
 from perturbations.utils import save_img
-import torch
 
 # 1) Define a single output folder and ensure it exists
 base_folder = "./pictures/Gradients"
