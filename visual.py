@@ -37,17 +37,14 @@ vit.load(vit_path)
 tiny.load(tiny_path)
 
 # 3) Pull out a single test image and label
-image, label = TEST_SET[0]
+image, label = TEST_SET[4]
 celeb = CLASSES[label]
 
-adv = Adversary(model=cnn)
-model_name = "TinyCNN"
+adv = Adversary(model=linear)
 
-gradient = adv.noise(image, label, eps = 1)
-save_img(torch.sign(gradient) - image, path = "./pictures/Gradients/Noise.png", title = "Noise")
+perturbed = adv.fgsm(image, label, eps = 0.12)
 
-rand = torch.rand_like(image) * 2.0 - 1.0
-save_img(rand, path = "./pictures/Gradients/Noise.png", title = "Noise")
+save_img(perturbed, path = "./pictures/0.12.png", title = "FGSM, Source: Linear")
 
 
 

@@ -40,13 +40,13 @@ if __name__ == "__main__":
     tinycnn.load(tiny_path)
 
     # Prepare the list of target models and their labels
-    target_models = [tinycnn, cnn, linear, casia, vgg, arcface, vit]
-    source_models = [tinycnn, cnn, linear, casia, vgg, vit]
-    model_labels  = ["TinyCNN", "SimpleCNN", "Linear", "ResNet_v1(Casia)", "ResNet_v1(VGG)", "ArcFace", "VIT"]
-    attacks = ["fgsm", "universal", "pgd"]
+    target_models = [cnn, linear, casia, vgg, arcface, vit]
+    source_models = [cnn, linear, casia, vgg, vit]
+    model_labels  = ["SimpleCNN", "Linear", "ResNet_v1(Casia)", "ResNet_v1(VGG)", "ArcFace", "VIT"]
+    attacks = ["noise"]
 
     # Define the epsilons to test
-    epsilons = [round(i * 0.04, 2) for i in range(6)]
+    epsilons = [0.12]
     
     for attack in attacks:
         for source_model in source_models:
