@@ -10,16 +10,16 @@ from perturbations.perturbations import Adversary
 from perturbations.utils import save_img
 
 # 1) Define a single output folder and ensure it exists
-base_folder = "./pictures/Gradients"
+base_folder = "./pictures/Brad"
 os.makedirs(base_folder, exist_ok=True)
 
 # 2) Load all your models as before
 linear = Linear()
-cnn          = SimpleCNN()
-vgg          = VGG()
-casia        = Casia()
-vit          = ViTEmbedder()
-tiny = TinyCNN()
+cnn    = SimpleCNN()
+vgg    = VGG()
+casia  = Casia()
+vit    = ViTEmbedder()
+tiny   = TinyCNN()
 
 linear_path = "./checkpoints/linear.npy"
 cnn_path    = "./checkpoints/simplecnn.npy"
@@ -39,11 +39,20 @@ tiny.load(tiny_path)
 image, label = TEST_SET[4]
 celeb = CLASSES[label]
 
-adv = Adversary(model=linear)
+source_models = [cnn, linear, casia, vgg, vit, tiny]
+model_labels  = ["SimpleCNN", "Linear", "ResNet_v1(Casia)", "ResNet_v1(VGG)", "VIT", "TinyCNN"]
 
-perturbed = adv.fgsm(image, label, eps = 0.12)
+epsilons = [0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2]
+for i in range (len(source_models)): 
+    adv = Adversary(model=source_models[i])
+    for epsilon in epsilons: 
+        perturbed = adv.fgsm(image, label, eps = epsilon)
+        folder = base_folder + "/" + model_labels[i]
+        os.makedirs(folder, exist_ok=True)
+        path = folder + "/Epsilon=" + str(epsilon) + ".png"
 
-save_img(perturbed, path = "./pictures/0.12.png", title = "FGSM, Source: Linear")
+        title = "FGSM, Source: " + model_labels[i] + "Epsilon= " + str(epsilon)
+        save_img(perturbed, path = path, title = title)
 
 
 

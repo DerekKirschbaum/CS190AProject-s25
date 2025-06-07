@@ -25,7 +25,7 @@ To run the code:
 
 4. **Install necessary packages:**
    ```bash
-   pip install numpy torch torchvision facenet-pytorch matplotlib pillow insightface transforms
+   pip install numpy torch torchvision facenet-pytorch matplotlib pillow insightface transforms 
 
 5. **Run the program:**
    To test specific types of attacks, modify epsilon values, or modify the models being tested, edit perturbation_testing.py and then run:
