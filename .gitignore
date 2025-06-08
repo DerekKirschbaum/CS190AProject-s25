@@ -5,7 +5,7 @@ env311/
 __pycache__/
 *.pyc
 
-# Ignore system files (macOS)
+# Ignore system files (for macOS)
 .DS_Store
 
 # Ignore insightface local cache download
