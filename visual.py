@@ -9,11 +9,9 @@ from preprocess_data import TEST_SET, CLASSES
 from perturbations.perturbations import Adversary
 from perturbations.utils import save_img
 
-# 1) Define a single output folder and ensure it exists
 base_folder = "./pictures/Brad"
 os.makedirs(base_folder, exist_ok=True)
 
-# 2) Load all your models as before
 linear = Linear()
 cnn    = SimpleCNN()
 vgg    = VGG()
@@ -35,7 +33,7 @@ casia.load(casia_path)
 vit.load(vit_path)
 tiny.load(tiny_path)
 
-# 3) Pull out a single test image and label
+# pull out a single test image and label
 image, label = TEST_SET[4]
 celeb = CLASSES[label]
 

@@ -7,7 +7,6 @@ from models.homemade_classifier import Classifier
 
 from preprocess_data import CLASSES
 
-#Model Definition
 
 class Linear(Classifier):
     def __init__(self, classes = CLASSES, height = 160, length = 160, model_name = "Linear"):

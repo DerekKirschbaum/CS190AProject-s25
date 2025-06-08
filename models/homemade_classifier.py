@@ -7,7 +7,6 @@ import os
 from preprocess_data import VAL_SET, CLASSES
 from abc import ABC, abstractmethod
 
-#Model Definition
 
 class Classifier(nn.Module):
     def __init__(self, model_name):
@@ -19,8 +18,8 @@ class Classifier(nn.Module):
     def forward(self, x):
         raise NotImplementedError
 
-     # Model Training
-
+     
+    # model training
     def build(self, dataset, save_path, batch_size = 128, epochs = 10, lr = 0.001, weight_decay = 0.001, val_set = VAL_SET, is_verbose = False):
         print("Building " + self.model_name + "...")
         max_validation_accuracy = 0
@@ -53,7 +52,7 @@ class Classifier(nn.Module):
                 print("Epoch:", epoch, "Validation Accuracy:", round(val_accuracy, 3), '%', "Training Accuracy: ", round(train_accuracy, 3) )
         print(self.model_name + " Build Complete")
     
-    def compute_gradient(self, image, celebrity):  #image: Tensor [3,160,160], celebrity: string, e.g. "Tom Hanks"
+    def compute_gradient(self, image, celebrity):  #image: Tensor [3,160,160], celebrity: string
         self.eval()
         
         image = image.clone().unsqueeze(0).requires_grad_(True)
@@ -69,7 +68,7 @@ class Classifier(nn.Module):
         grad = grad.clamp(-1,1)
         return grad
 
-    def compute_accuracy(self, dataset): #Computing Accuracy
+    def compute_accuracy(self, dataset):
         correct = 0
         total = 0
         self.eval()

@@ -7,8 +7,6 @@ from models.homemade_classifier import Classifier
 
 from preprocess_data import VAL_SET, CLASSES
 
-#Model Definition
-
 class SimpleCNN(Classifier):
     def __init__(self, classes = CLASSES, height = 160, length = 160, model_name = "SimpleCNN"):
         self.classes = classes

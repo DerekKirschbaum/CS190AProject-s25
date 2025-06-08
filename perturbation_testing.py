@@ -13,7 +13,6 @@ from preprocess_data import TEST_SET
 
 figure_path = './figures/'
 if __name__ == "__main__":
-    # Instantiate and load each model
     cnn = SimpleCNN()
     vgg = VGG()
     casia = Casia()
@@ -39,14 +38,13 @@ if __name__ == "__main__":
     vit.load(vit_path)
     tinycnn.load(tiny_path)
 
-    # Prepare the list of target models and their labels
     target_models = [cnn, linear, casia, vgg, arcface, vit]
     source_models = [cnn, linear, casia, vgg, vit]
     model_labels  = ["SimpleCNN", "Linear", "ResNet_v1(Casia)", "ResNet_v1(VGG)", "ArcFace", "VIT"]
     attacks = ["noise"]
 
-    # Define the epsilons to test
-    epsilons = [0.12]
+    # Define which epsilons to test
+    epsilons = [0.00, 0.04, 0.08, 0.12, 0.16, 0.20]
     
     for attack in attacks:
         for source_model in source_models:

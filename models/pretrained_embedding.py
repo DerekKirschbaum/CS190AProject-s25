@@ -25,15 +25,15 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         embeddings_by_class = {name: [] for name in self.classes}
 
         for img_tensor, label_idx in dataset:
-            # img_tensor: shape [3,H,W]
-            # We want to run it through embed(), which expects a 4D batch.
-            single_batch = img_tensor.unsqueeze(0)       # → [1,3,H,W]
-            emb_tensor = self.embed(single_batch)        # → [1, D]
-            emb_np = emb_tensor.cpu().numpy()[0]         # extract the single row
+            # img_tensor = [3,H,W]
+            # embed() expects a 4D batch.
+            single_batch = img_tensor.unsqueeze(0)       # convert to [1,3,H,W]
+            emb_tensor = self.embed(single_batch)       
+            emb_np = emb_tensor.cpu().numpy()[0]         
             class_name = self.classes[label_idx]
             embeddings_by_class[class_name].append(emb_np)
 
-        # Compute and store NumPy mean‐vector per class:
+        # store mean‐vector per class
         for class_name, embs in embeddings_by_class.items():
             mean_emb = np.mean(embs, axis=0)
             self.class_means[class_name] = mean_emb / np.linalg.norm(mean_emb)
@@ -43,54 +43,47 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         self.save(save_path)
 
     def forward(self, x):
-        # 1) Get embedding of x → [batch, D]
+        #get embedding of x
         emb = self.embed(x)           
-        emb = F.normalize(emb, dim=1)             # L2‐norm
-        # 2) Stack class_means into a [D, num_classes] tensor
+        emb = F.normalize(emb, dim=1)
+
         cm_torch = torch.stack(
             [torch.from_numpy(m).to(x.device).float()
              for m in self.class_means.values()],
             dim=1
         )  # [D, num_classes]
-        # 3) Return emb @ cm_torch → [batch, num_classes]
         return emb @ cm_torch
  
     def embed(self, face_tensor: torch.Tensor) -> np.ndarray:
         if face_tensor.dim() == 3:
-            # Single example: add batch‐dim
-            x_in = face_tensor.unsqueeze(0)   # → [1, 3, H, W]
+            x_in = face_tensor.unsqueeze(0)   # -> [1, 3, H, W]
         elif face_tensor.dim() == 4:
-            # Already a batch
-            x_in = face_tensor              # → [B, 3, H, W]
+            x_in = face_tensor            
         else:
             raise ValueError(
                 f"embed(...) expected input of dim 3 or 4, got {face_tensor.dim()}"
             )
 
-        # Pass through the underlying embedding network:
-        emb = self.model(x_in)                   # → [batch_size, D]
-        emb = F.normalize(emb, p=2, dim=1)       # L2‐normalize each row
+        emb = self.model(x_in)                
+        emb = F.normalize(emb, p=2, dim=1)       
 
         return emb   
     
-    def compute_gradient(self, image, celebrity):  # tensor [3,160,160], celebrity = 'scarlett', 'brad',
-        # 1) build a stacked tensor of all class‐means: shape (512,5)
+    def compute_gradient(self, image, celebrity):  # tensor [3,160,160], celebrity: string
         cm_torch = torch.stack([torch.tensor(self.class_means[c], dtype=torch.float32)
                                 for c in self.classes], dim=1)
-        # 2) prepare input for gradient
-        x = image.unsqueeze(0).clone().detach().requires_grad_(True) #(1,3,160,160)
-        # 3) forward → embedding → normalize → compute 5 “logits”
-        logits = self.forward(x)                              # (1,5)
+        x = image.unsqueeze(0).clone().detach().requires_grad_(True) # (1,3,160,160)
+        logits = self.forward(x)
 
         y_true = self.classes.index(celebrity)
         label = torch.tensor([y_true], dtype=torch.long)
 
-        # 5) cross-entropy loss (we want to *increase* this)
+        # compute cross entropy loss
         loss = F.cross_entropy(logits, label)
         loss.backward()
 
         grad = x.grad   
-        grad = grad.squeeze(dim = 0)                        # (3,160,160)
+        grad = grad.squeeze(dim = 0) # (3,160,160)
 
         return grad
 
@@ -98,21 +91,13 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         correct = 0
         total = 0
 
-        # We don’t need gradients here:
         with torch.no_grad():
             for image, label in dataset:
-                # 1) “image” is [3, H, W]; turn it into a batch [1, 3, H, W]
-                x = image.unsqueeze(0)  # → shape [1, 3, H, W]
-                #    If your model lives on a GPU, you might need: x = x.to(device)
+                x = image.unsqueeze(0)
+                logits = self.forward(x)
 
-                # 2) Run it through forward(...) to get [1, num_classes] logits
-                logits = self.forward(x)     # → tensor of shape [1, num_classes]
-
-                # 3) Find the predicted index (0 .. num_classes-1)
                 pred_idx = int(logits.argmax(dim=1).item())
-
-                # 4) True index:
-                true_idx = int(label)  # or label.item() if label is a 0-d torch.Tensor
+                true_idx = int(label)
 
                 if pred_idx == true_idx:
                     correct += 1
@@ -138,10 +123,10 @@ class EmbeddingModel(ABC): #ABC = abstract base class
         total = 0
         for image, label in dataset: 
             image = image.unsqueeze(0)  # Add batch dimension: [1, C, H, W]
-            cos_sim = self.forward(image)  # [1, num_classes]
+            cos_sim = self.forward(image)
             
-            # Get predicted class and its similarity value
-            val, pred_idx = torch.max(cos_sim, dim=1)  # both are shape [1]
+            # Get predicted class and similarity value
+            val, pred_idx = torch.max(cos_sim, dim=1)
             pred_idx = pred_idx.item()
             val = val.item()
             
