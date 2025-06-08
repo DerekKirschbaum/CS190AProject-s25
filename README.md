@@ -1,6 +1,6 @@
 # CS190AProject-s25
 
-Link to paper: https://www.overleaf.com/2554581631jmfyfjjctffh#0e5560
+This repo contains all of the code and figures that we used in all of the experiments in the following paper: 
 
 ## Running the Code
 
