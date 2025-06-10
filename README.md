@@ -1,6 +1,6 @@
 # CS190AProject-s25
 
-This repo contains all of the code and figures that we used in all of the experiments, as well as our final paper, Adversarial Machine Learning
+This repo contains all of the code and figures that we used in all of the experiments, as well as our final paper, Adversarial Machine Learning Report
 ## Running the Code
 
 To run the code:
