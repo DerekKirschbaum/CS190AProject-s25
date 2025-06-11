@@ -1,6 +1,6 @@
 # CS190AProject-s25
 
-This repo contains all of the code and figures that we used in all of the experiments, as well as our final paper, "[Exploring the Impact of Model Architecture on Adversarial Transferability in Facial Recognition](https://github.com/DerekKirschbaum/CS190AProject-s25/blob/main/Adversarial_Machine_Learning_Report%20(9).pdf)".
+This repo contains all of the code and figures that we used in all of the experiments, as well as our final paper, "[Exploring the Impact of Model Architecture on Adversarial Transferability in Facial Recognition](https://github.com/DerekKirschbaum/CS190AProject-s25/blob/main/Adversarial_Machine_Learning_Report.pdf)".
 
 ## Running the Code
 
